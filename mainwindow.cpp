@@ -47,6 +47,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lbl_front_txt->setAutoFillBackground(true);
     ui->lbl_front_txt->setPalette(front_palette);
     ui->lbl_front_txt->setFixedWidth(100);
+
 }
 
 MainWindow::~MainWindow()
