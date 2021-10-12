@@ -1,0 +1,382 @@
+#include "TwoWheelerGraphicsItem.h"
+
+TwoWheelerGraphicsItem::TwoWheelerGraphicsItem(LabelManager* label_manager, GtInfo& gt_info, int zValue):
+    m_gtInfo(gt_info)
+{
+    float_t min_x = std::min(gt_info.front_x, gt_info.rear_x);
+    float_t min_y = std::min(gt_info.front_y, gt_info.rear_y);
+    float_t max_x = std::max(gt_info.front_x, gt_info.rear_x);
+    float_t max_y = std::max(gt_info.front_y, gt_info.rear_y);
+
+    m_rect.setX(min_x);
+    m_rect.setY(min_y);
+    m_rect.setWidth(max_x - min_x);
+    m_rect.setHeight(max_y - min_y);
+
+    x_center = (min_x + max_x)/2.F;
+    y_center = (min_y + max_y)/2.F;
+
+    if((gt_info.front_x==0 && gt_info.front_y==0) || (gt_info.rear_x==0 && gt_info.rear_y==0)){
+        m_rect.setX(max_x-25.F);
+        m_rect.setY(max_y-25.F);
+        m_rect.setWidth(30.F);
+        m_rect.setHeight(30.F);
+
+        x_center = 10.F;
+        y_center = 10.F;
+        if(gt_info.is_valid==false){
+            m_rect.setX(max_x-2.F);
+            m_rect.setY(max_y-2.F);
+            m_rect.setWidth(4.F);
+            m_rect.setHeight(4.F);
+        }
+//        has_one_wheel = true;
+    }
+    else{
+        m_rect.setX(min_x);
+        m_rect.setY(min_y);
+        m_rect.setWidth(max_x - min_x);
+        m_rect.setHeight(max_y - min_y);
+
+        x_center = (min_x + max_x)/2.F;
+        y_center = (min_y + max_y)/2.F;
+    }
+
+    setFlags(ItemIsMovable | ItemSendsGeometryChanges);
+    setAcceptHoverEvents(true);
+//    setAcceptDrops(true);
+
+    setZValue(zValue);
+    this->m_labelmanager = label_manager;
+
+    m_itemController = eNone;
+
+    multiple_chosen = false;
+}
+
+void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphicsItem* option, QWidget* widget)
+{
+    if(m_gtInfo.is_background==true){
+        m_labelmanager->setBottomLayer(this);
+    }
+    if(m_gtInfo.draw_enabled==true && m_gtInfo.is_background==false){
+        QPen pen = painter->pen();
+
+        QColor box_color = Qt::blue;
+        if(m_gtInfo.is_chosen==true){
+            box_color = Qt::magenta;
+        }
+        QBrush brush(box_color);
+        painter->setBrush(brush);
+        pen.setColor(box_color);
+
+        pen.setWidth(2);
+        painter->setPen(pen);
+
+        if(!(m_gtInfo.front_x==0 && m_gtInfo.front_y==0)){
+            painter->drawRect(m_gtInfo.front_x-4.F, m_gtInfo.front_y-4.F, 8, 8);
+        }
+        if(!(m_gtInfo.rear_x==0 && m_gtInfo.rear_y==0)){
+            painter->drawRect(m_gtInfo.rear_x-4.F, m_gtInfo.rear_y-4.F, 8, 8);
+        }
+
+        widget->update();
+    }
+}
+
+QRectF TwoWheelerGraphicsItem::boundingRect() const{
+    return this->m_rect;
+}
+
+void TwoWheelerGraphicsItem::updateGtInfo()
+{
+//    auto updatedPos = mapRectToScene(m_rect);
+//    m_gtInfo.bbox.x1 = updatedPos.left();
+//    m_gtInfo.bbox.y1 = updatedPos.top();
+//    m_gtInfo.bbox.x2 = updatedPos.right();
+//    m_gtInfo.bbox.y2 = updatedPos.bottom();
+}
+
+void TwoWheelerGraphicsItem::ResizeTop(QPointF mouse_pos)
+{
+//    m_rect.setY(mouse_pos.y());
+//    m_rect.setY(std::max(0, int(mouse_pos.y())));
+}
+
+void TwoWheelerGraphicsItem::ResizeLeft(QPointF mouse_pos)
+{
+//    m_rect.setX(mouse_pos.x());
+//    m_rect.setX(std::max(0, int(mouse_pos.x())));
+}
+
+void TwoWheelerGraphicsItem::ResizeRight(QPointF mouse_pos)
+{
+//    mouse_pos.rx() -= m_rect.x();
+//    m_rect.setWidth(mouse_pos.x());
+//    m_rect.setWidth(std::max(int(mouse_pos.x()), 1920));
+}
+
+void TwoWheelerGraphicsItem::ResizeBottom(QPointF mouse_pos)
+{
+//    mouse_pos.ry() -= m_rect.y();
+//    m_rect.setHeight(mouse_pos.y());
+//    m_rect.setWidth(std::max(int(mouse_pos.y()), 1080));
+}
+
+void TwoWheelerGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
+{
+//    // Add function for undo/redo
+//    if(m_gtInfo.is_chosen==true && m_gtInfo.is_first==false){
+//        emit m_labelmanager->saveUndoRedo();
+//    }
+//    updateGtInfo();
+////    qDebug() << event->pos().x();
+//    if (m_gtInfo.move_resize == true) {
+//        QGraphicsItem::mouseReleaseEvent(event);
+//        m_gtInfo.move_resize = false;
+//        m_gtInfo.is_chosen = true;
+//    }
+//    m_labelmanager->setTopLayer(this);
+//    m_itemController = eNone;
+    if(m_gtInfo.is_background==true && event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton && m_gtInfo.vehicle_mode==false){
+        m_gtInfo.drag_chosen_area.x2 = event->pos().x();
+        m_gtInfo.drag_chosen_area.y2 = event->pos().y();
+        if(m_gtInfo.drag_chosen_area.x1>m_gtInfo.drag_chosen_area.x2){
+            m_gtInfo.drag_chosen_area.x2 = m_gtInfo.drag_chosen_area.x1;
+            m_gtInfo.drag_chosen_area.x1 = event->pos().x();
+        }
+        if(m_gtInfo.drag_chosen_area.y1>m_gtInfo.drag_chosen_area.y2){
+            m_gtInfo.drag_chosen_area.y2 = m_gtInfo.drag_chosen_area.y1;
+            m_gtInfo.drag_chosen_area.y1 = event->pos().y();
+        }
+
+        emit m_labelmanager->selectDraggedArea(m_gtInfo.drag_chosen_area);
+    }
+    else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==true && event->button() == Qt::LeftButton){
+        m_gtInfo.is_not_dragging = false;
+//        if(m_gtInfo.vehicle_mode==false){
+//            // set rider points
+//            emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
+//        }
+//        else{
+//            emit m_labelmanager->unselectOthers(-1);
+//        }
+        emit m_labelmanager->unselectOthers(-1);
+    }
+//    else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==false && event->button() == Qt::LeftButton){
+//        // zoom dragging
+//    }
+//    if(m_gtInfo.is_chosen==true && m_gtInfo.is_first==true){
+    else if(m_gtInfo.is_chosen==true && m_gtInfo.is_first==true){
+        m_gtInfo.is_first = false;
+    }
+////    qDebug() << m_gtInfo.bbox.x1 << m_gtInfo.bbox.y1 << m_gtInfo.bbox.x2 << m_gtInfo.bbox.y2;
+////    emit m_labelmanager->updateChangedInfos(m_gtInfo, zValue());
+}
+
+void TwoWheelerGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
+{
+    if(m_gtInfo.is_background==true && event->modifiers() != Qt::Modifier::CTRL){// && event->button()==Qt::LeftButton){
+        m_gtInfo.is_not_dragging = false;
+
+////        m_gtInfo.drag_chosen_area.x2 = event->pos().x();
+////        m_gtInfo.drag_chosen_area.y2 = event->pos().y();
+//        float_t curr_x = event->pos().x();
+//        float_t curr_y = event->pos().y();
+
+////        emit m_labelmanager->dragZoomFocusedArea(m_gtInfo.drag_chosen_area);
+//        emit m_labelmanager->dragZoomFocusedArea(curr_x, curr_y);
+
+//        m_gtInfo.drag_chosen_area.x1 = (int32_t)event->pos().x();
+//        m_gtInfo.drag_chosen_area.y1 = (int32_t)event->pos().y();
+    }
+//    if (m_gtInfo.is_chosen == true) {
+//        m_gtInfo.move_resize = true;
+//        if (event->buttons() & Qt::LeftButton && m_itemController == eNone) {
+////            if(m_gtInfo.is_first==false)
+////                QGraphicsItem::mouseMoveEvent(event);
+//        }
+//        else if (event->buttons() & Qt::LeftButton && m_itemController != eNone) {
+//            auto mouse_pos = event->pos();
+//            if (m_itemController == eB) {
+//                ResizeBottom(mouse_pos);
+//            }
+//            if (m_itemController == eR) {
+//                ResizeRight(mouse_pos);
+//            }
+//            if (m_itemController == eT) {
+//                ResizeTop(mouse_pos);
+//            }
+//            if (m_itemController == eL) {
+//                ResizeLeft(mouse_pos);
+//            }
+//            if (m_itemController == eLT) {
+//                ResizeLeft(mouse_pos);
+//                ResizeTop(mouse_pos);
+//            }
+//            if (m_itemController == eRT) {
+//                ResizeRight(mouse_pos);
+//                ResizeTop(mouse_pos);
+//            }
+//            if (m_itemController == eLB) {
+//                ResizeLeft(mouse_pos);
+//                ResizeBottom(mouse_pos);
+//            }
+//            if (m_itemController == eRB) {
+//                ResizeRight(mouse_pos);
+//                ResizeBottom(mouse_pos);
+//            }
+
+//            prepareGeometryChange();
+
+////            qDebug() << m_gtInfo.bbox.x1 << m_gtInfo.bbox.y1 << m_gtInfo.bbox.x2 << m_gtInfo.bbox.y2;
+////            emit m_labelmanager->updateChangedInfos(m_gtInfo, zValue());
+//        }
+//    }
+}
+
+void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
+{
+    QGraphicsItem::mousePressEvent(event);
+    if(m_gtInfo.is_background==true){
+        m_labelmanager->setBottomLayer(this);
+        if(event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){
+            // multi select by drag
+            m_gtInfo.drag_chosen_area.x1 = event->pos().x();
+            m_gtInfo.drag_chosen_area.y1 = event->pos().y();
+        }
+        else if(event->button() == Qt::LeftButton){
+            m_gtInfo.is_not_dragging = true;
+
+//            float_t move_start_x = event->pos().x();
+//            float_t move_start_y = event->pos().y();
+
+//            emit m_labelmanager->setStartXY(move_start_x, move_start_y);
+
+////            m_gtInfo.drag_chosen_area.x1 = event->pos().x();
+////            m_gtInfo.drag_chosen_area.y1 = event->pos().y();
+        }
+    }
+//    if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
+    else if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
+        if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false){
+            m_gtInfo.is_chosen = true;
+            m_labelmanager->setTopLayer(this);
+            m_gtInfo.multi_chosen = true;
+            emit m_labelmanager->setMultiChosen();
+        }
+        else if (m_gtInfo.is_chosen == true && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false){
+            m_gtInfo.is_chosen = false;
+            if(m_gtInfo.is_first==false){
+                m_gtInfo.is_first = true;
+            }
+            m_labelmanager->setBottomLayer(this);
+            m_gtInfo.multi_chosen = false;
+        }
+    }
+    else if (event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
+        if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false){
+            m_gtInfo.is_chosen = true;
+            m_labelmanager->setTopLayer(this);
+
+            emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
+//            m_labelmanager->setTopLayer(this);
+        }
+        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==true && m_gtInfo.vehicle_mode==false){// Need to add more condition
+            m_gtInfo.is_chosen = true;
+            m_labelmanager->setTopLayer(this);
+
+            emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
+        }
+        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==true){
+            m_gtInfo.is_chosen = false;
+            if(m_gtInfo.is_first==false){
+                m_gtInfo.is_first = true;
+            }
+            m_labelmanager->setBottomLayer(this);
+        }
+    }
+    else if (event->button() == Qt::RightButton) {
+        QMenu myMenu;
+        myMenu.addAction("Set Top Layer");
+        myMenu.addAction("Set Bottom Layer");
+//        myMenu.addAction("Set object class");
+        myMenu.setGeometry(QCursor::pos().x(), QCursor::pos().y(), myMenu.sizeHint().width(), myMenu.sizeHint().height());
+        auto selectedAction = myMenu.exec();
+        if (selectedAction != nullptr) {
+            if (selectedAction->text() == "Set Top Layer") {
+                m_labelmanager->setTopLayer(this);
+            }
+            else if (selectedAction->text() == "Set Bottom Layer") {
+                m_labelmanager->setBottomLayer(this);
+            }
+//            else if (selectedAction->text() == "Set object class") {
+//                emit m_labelmanager->changeObjCls(m_gtInfo);
+//                m_gtInfo.is_chosen = true;
+//                m_labelmanager->setTopLayer(this);
+////                m_labelmanager->setBottomLayer(this);
+//            }
+        }
+    }
+}
+
+void TwoWheelerGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
+{
+//    if (m_gtInfo.is_chosen == true){// && m_gtInfo.mode_edit == true) {
+////        m_LabelManager->CheckMousePos(event->pos());
+//        auto mouse_pos = event->pos();
+//        auto rect_pos = mapRectToScene(m_rect);
+//        mouse_pos.rx() -= m_rect.x();
+//        mouse_pos.ry() -= m_rect.y();
+
+//        bool TopEdgeIn = abs(mouse_pos.y()) < 5;
+//        bool LeftEdgeIn = abs(mouse_pos.x()) < 5;
+//        bool RightEdgeIn = abs(mouse_pos.x() - rect_pos.width()) < 5;
+//        bool BottomEdgeIn = abs(mouse_pos.y() - rect_pos.height()) < 5;
+
+//        if ((LeftEdgeIn && TopEdgeIn) ||
+//            (RightEdgeIn && BottomEdgeIn)) {
+//            if (LeftEdgeIn && TopEdgeIn) {
+//                m_itemController = eLT;
+//            }
+//            else {
+//                m_itemController = eRB;
+//            }
+//            this->setCursor(Qt::SizeFDiagCursor);
+
+//        }
+//        else if ((RightEdgeIn && TopEdgeIn) ||
+//                 (LeftEdgeIn && BottomEdgeIn)) {
+//            if (RightEdgeIn && TopEdgeIn) {
+//                m_itemController = eRT;
+//            }
+//            else {
+//                m_itemController = eLB;
+//            }
+//            this->setCursor(Qt::SizeBDiagCursor);
+//        }
+//        else if (TopEdgeIn || BottomEdgeIn) {
+//            if (TopEdgeIn) {
+//                m_itemController = eT;
+//            }
+//            else {
+//                m_itemController = eB;
+//            }
+//            this->setCursor(Qt::SizeVerCursor);
+//        }
+//        else if (LeftEdgeIn || RightEdgeIn) {
+//            if (LeftEdgeIn) {
+//                m_itemController = eL;
+//            }
+//            else {
+//                m_itemController = eR;
+//            }
+//            this->setCursor(Qt::SizeHorCursor);
+//        }
+//        else {
+//            m_itemController = eNone;
+//            this->setCursor(Qt::ArrowCursor);
+//        }
+//        QGraphicsItem::hoverMoveEvent(event);
+//    }
+}
