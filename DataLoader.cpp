@@ -191,10 +191,10 @@ void DataLoader::readJson(){
         GtInfo curr_gt;
         if(curr_obj.contains("obj_cls") && curr_obj["obj_cls"].toString()=="two-wheeler"){
             curr_gt.is_2_wheeler = true;
-            curr_gt.rear_x = curr_obj["rear_wheel"].toArray()[0].toDouble();
-            curr_gt.rear_y = curr_obj["rear_wheel"].toArray()[1].toDouble();
-            curr_gt.front_x = curr_obj["front_wheel"].toArray()[0].toDouble();
-            curr_gt.front_y = curr_obj["front_wheel"].toArray()[1].toDouble();
+            curr_gt.rear_x = curr_obj["rear_wheel"].toArray()[0].toDouble()==-1 ? 0 : curr_obj["rear_wheel"].toArray()[0].toDouble();
+            curr_gt.rear_y = curr_obj["rear_wheel"].toArray()[1].toDouble()==-1 ? 0 : curr_obj["rear_wheel"].toArray()[1].toDouble();
+            curr_gt.front_x = curr_obj["front_wheel"].toArray()[0].toDouble()==-1 ? 0 : curr_obj["front_wheel"].toArray()[0].toDouble();
+            curr_gt.front_y = curr_obj["front_wheel"].toArray()[1].toDouble()==-1 ? 0 : curr_obj["front_wheel"].toArray()[1].toDouble();
         }
         else{
             curr_gt.X = curr_obj["X"].toArray()[0].toDouble();
@@ -270,12 +270,24 @@ void DataLoader::saveCurrGT(){
             else{
                 object["obj_cls"] = "two-wheeler";
                 Json::Value rear_coords;
-                rear_coords.append(curr_gt_infos[i].rear_x);
-                rear_coords.append(curr_gt_infos[i].rear_y);
+                if(curr_gt_infos[i].rear_x==0 && curr_gt_infos[i].rear_y==0){
+                    rear_coords.append(-1);
+                    rear_coords.append(-1);
+                }
+                else{
+                    rear_coords.append(curr_gt_infos[i].rear_x);
+                    rear_coords.append(curr_gt_infos[i].rear_y);
+                }
                 object["rear_wheel"] = rear_coords;
                 Json::Value front_coords;
-                front_coords.append(curr_gt_infos[i].front_x);
-                front_coords.append(curr_gt_infos[i].front_y);
+                if(curr_gt_infos[i].front_x==0 && curr_gt_infos[i].front_y==0){
+                    front_coords.append(-1);
+                    front_coords.append(-1);
+                }
+                else{
+                    front_coords.append(curr_gt_infos[i].front_x);
+                    front_coords.append(curr_gt_infos[i].front_y);
+                }
                 object["front_wheel"] = front_coords;
             }
             out_json["objects"].append(object);
