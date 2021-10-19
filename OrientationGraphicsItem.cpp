@@ -353,6 +353,12 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 void OrientationGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 {
+    if(m_gtInfo.is_background==true && m_gtInfo.vehicle_mode==false){
+        this->setCursor(Qt::PointingHandCursor);
+    }
+    else{
+        this->setCursor(Qt::ArrowCursor);
+    }
 //    if (m_gtInfo.is_chosen == true){// && m_gtInfo.mode_edit == true) {
 ////        m_LabelManager->CheckMousePos(event->pos());
 //        auto mouse_pos = event->pos();
