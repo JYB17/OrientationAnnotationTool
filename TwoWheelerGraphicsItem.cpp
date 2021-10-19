@@ -80,6 +80,12 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
             painter->drawRect(m_gtInfo.rear_x-4.F, m_gtInfo.rear_y-4.F, 8, 8);
         }
 
+        if(!(m_gtInfo.front_x==0 && m_gtInfo.front_y==0) && !(m_gtInfo.rear_x==0 && m_gtInfo.rear_y==0)){
+            pen.setColor(Qt::yellow);
+            painter->setPen(pen);
+            painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
+        }
+
         widget->update();
     }
 }
