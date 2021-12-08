@@ -76,6 +76,10 @@ private slots:
 
     void on_btn_load_gts_imgs_clicked();
 
+    void setAddWheelMode(int32_t curr_idx);
+
+    void on_btn_delete_wheel_points_clicked();
+
 private:
     void changeFrame(int32_t frame_no);
     void play_video();

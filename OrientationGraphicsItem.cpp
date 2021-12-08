@@ -186,13 +186,14 @@ void OrientationGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
     }
     else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==true && event->button() == Qt::LeftButton){
         m_gtInfo.is_not_dragging = false;
-        if(m_gtInfo.vehicle_mode==false){
-            // set rider points
-            emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
-        }
-        else{
-            emit m_labelmanager->unselectOthers(-1);
-        }
+//        if(m_gtInfo.vehicle_mode==false){
+//            // set rider points
+//            emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
+//        }
+//        else{
+//            emit m_labelmanager->unselectOthers(-1);
+//        }
+        emit m_labelmanager->unselectOthers(-1);
     }
 //    else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==false && event->button() == Qt::LeftButton){
 //        // zoom dragging
@@ -353,12 +354,12 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
 void OrientationGraphicsItem::hoverMoveEvent(QGraphicsSceneHoverEvent* event)
 {
-    if(m_gtInfo.is_background==true && m_gtInfo.vehicle_mode==false){
-        this->setCursor(Qt::PointingHandCursor);
-    }
-    else{
-        this->setCursor(Qt::ArrowCursor);
-    }
+//    if(m_gtInfo.is_background==true && m_gtInfo.vehicle_mode==false){
+//        this->setCursor(Qt::PointingHandCursor);
+//    }
+//    else{
+//        this->setCursor(Qt::ArrowCursor);
+//    }
 //    if (m_gtInfo.is_chosen == true){// && m_gtInfo.mode_edit == true) {
 ////        m_LabelManager->CheckMousePos(event->pos());
 //        auto mouse_pos = event->pos();

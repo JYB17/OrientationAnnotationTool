@@ -3,44 +3,52 @@
 TwoWheelerGraphicsItem::TwoWheelerGraphicsItem(LabelManager* label_manager, GtInfo& gt_info, int zValue):
     m_gtInfo(gt_info)
 {
-    float_t min_x = std::min(gt_info.front_x, gt_info.rear_x);
-    float_t min_y = std::min(gt_info.front_y, gt_info.rear_y);
-    float_t max_x = std::max(gt_info.front_x, gt_info.rear_x);
-    float_t max_y = std::max(gt_info.front_y, gt_info.rear_y);
+    m_rect.setX(gt_info.bbox.x1);
+    m_rect.setY(gt_info.bbox.y1);
+    m_rect.setWidth(gt_info.bbox.x2 - gt_info.bbox.x1);
+    m_rect.setHeight(gt_info.bbox.y2 - gt_info.bbox.y1);
 
-    m_rect.setX(min_x);
-    m_rect.setY(min_y);
-    m_rect.setWidth(max_x - min_x);
-    m_rect.setHeight(max_y - min_y);
+    x_center = (gt_info.bbox.x2 + gt_info.bbox.x1)/2.F;
+    y_center = (gt_info.bbox.y2 + gt_info.bbox.y1)/2.F;
 
-    x_center = (min_x + max_x)/2.F;
-    y_center = (min_y + max_y)/2.F;
+//    float_t min_x = std::min(gt_info.front_x, gt_info.rear_x);
+//    float_t min_y = std::min(gt_info.front_y, gt_info.rear_y);
+//    float_t max_x = std::max(gt_info.front_x, gt_info.rear_x);
+//    float_t max_y = std::max(gt_info.front_y, gt_info.rear_y);
 
-    if((gt_info.front_x==0 && gt_info.front_y==0) || (gt_info.rear_x==0 && gt_info.rear_y==0)){
-        m_rect.setX(max_x-25.F);
-        m_rect.setY(max_y-25.F);
-        m_rect.setWidth(30.F);
-        m_rect.setHeight(30.F);
+//    m_rect.setX(min_x);
+//    m_rect.setY(min_y);
+//    m_rect.setWidth(max_x - min_x);
+//    m_rect.setHeight(max_y - min_y);
 
-        x_center = 10.F;
-        y_center = 10.F;
-        if(gt_info.is_valid==false){
-            m_rect.setX(max_x-2.F);
-            m_rect.setY(max_y-2.F);
-            m_rect.setWidth(4.F);
-            m_rect.setHeight(4.F);
-        }
-//        has_one_wheel = true;
-    }
-    else{
-        m_rect.setX(min_x);
-        m_rect.setY(min_y);
-        m_rect.setWidth(max_x - min_x);
-        m_rect.setHeight(max_y - min_y);
+//    x_center = (min_x + max_x)/2.F;
+//    y_center = (min_y + max_y)/2.F;
 
-        x_center = (min_x + max_x)/2.F;
-        y_center = (min_y + max_y)/2.F;
-    }
+//    if((gt_info.front_x==0 && gt_info.front_y==0) || (gt_info.rear_x==0 && gt_info.rear_y==0)){
+//        m_rect.setX(max_x-25.F);
+//        m_rect.setY(max_y-25.F);
+//        m_rect.setWidth(30.F);
+//        m_rect.setHeight(30.F);
+
+//        x_center = 10.F;
+//        y_center = 10.F;
+//        if(gt_info.is_valid==false){
+//            m_rect.setX(max_x-2.F);
+//            m_rect.setY(max_y-2.F);
+//            m_rect.setWidth(4.F);
+//            m_rect.setHeight(4.F);
+//        }
+////        has_one_wheel = true;
+//    }
+//    else{
+//        m_rect.setX(min_x);
+//        m_rect.setY(min_y);
+//        m_rect.setWidth(max_x - min_x);
+//        m_rect.setHeight(max_y - min_y);
+
+//        x_center = (min_x + max_x)/2.F;
+//        y_center = (min_y + max_y)/2.F;
+//    }
 
     setFlags(ItemIsMovable | ItemSendsGeometryChanges);
     setAcceptHoverEvents(true);
@@ -61,26 +69,40 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
     }
     if(m_gtInfo.draw_enabled==true && m_gtInfo.is_background==false){
         QPen pen = painter->pen();
-
-        QColor box_color = Qt::blue;
-        if(m_gtInfo.is_chosen==true){
-            box_color = Qt::magenta;
-        }
-        QBrush brush(box_color);
-        painter->setBrush(brush);
-        pen.setColor(box_color);
-
         pen.setWidth(2);
         painter->setPen(pen);
 
-        if(!(m_gtInfo.front_x==0 && m_gtInfo.front_y==0)){
-            painter->drawRect(m_gtInfo.front_x-4.F, m_gtInfo.front_y-4.F, 8, 8);
+        QColor box_color = Qt::blue;
+        if(m_gtInfo.is_chosen==true){
+//            box_color = Qt::magenta;
+            QBrush brush(Qt::white);
+            painter->setBrush(brush);
+            pen.setColor(Qt::white);
+            pen.setWidth(4);
+            painter->setPen(pen);
+            painter->drawRect(m_gtInfo.bbox.x1 - 6,m_gtInfo.bbox.y1 - 6, 12, 12);
+            painter->drawRect(m_gtInfo.bbox.x1 - 6,m_gtInfo.bbox.y2 - 6, 12, 12);
+            painter->drawRect(m_gtInfo.bbox.x2 - 6,m_gtInfo.bbox.y1 - 6, 12, 12);
+            painter->drawRect(m_gtInfo.bbox.x2 - 6,m_gtInfo.bbox.y2 - 6, 12, 12);
         }
-        if(!(m_gtInfo.rear_x==0 && m_gtInfo.rear_y==0)){
-            painter->drawRect(m_gtInfo.rear_x-4.F, m_gtInfo.rear_y-4.F, 8, 8);
+        pen.setColor(Qt::yellow);
+        painter->setPen(pen);
+        painter->setBrush(Qt::transparent);
+        painter->drawRect(m_gtInfo.bbox.x1, m_gtInfo.bbox.y1, m_gtInfo.bbox.x2-m_gtInfo.bbox.x1, m_gtInfo.bbox.y2-m_gtInfo.bbox.y1);
+
+        QBrush brush(Qt::yellow);
+        painter->setBrush(brush);
+        pen.setWidth(1);
+        painter->setPen(pen);
+
+        if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F)){
+            painter->drawRect(m_gtInfo.front_x-2.F, m_gtInfo.front_y-2.F, 4, 4);
+        }
+        if(!(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
+            painter->drawRect(m_gtInfo.rear_x-2.F, m_gtInfo.rear_y-2.F, 4, 4);
         }
 
-        if(!(m_gtInfo.front_x==0 && m_gtInfo.front_y==0) && !(m_gtInfo.rear_x==0 && m_gtInfo.rear_y==0)){
+        if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F) && !(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
             pen.setColor(Qt::yellow);
             painter->setPen(pen);
             painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
@@ -160,6 +182,8 @@ void TwoWheelerGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
     }
     else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==true && event->button() == Qt::LeftButton){
         m_gtInfo.is_not_dragging = false;
+
+        qDebug() << "unselect all!";
 //        if(m_gtInfo.vehicle_mode==false){
 //            // set rider points
 //            emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
@@ -281,25 +305,36 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
         }
     }
     else if (event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
-        if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false){
+        if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false && m_gtInfo.zoom_mode==false){
             m_gtInfo.is_chosen = true;
             m_labelmanager->setTopLayer(this);
 
-            emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
+//            qDebug() << "2-wheeler chosen!!!";
+
+//            emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
+//            m_gtInfo.is_adding_wheel = true;
+            emit m_labelmanager->setAddWheelMode(m_gtInfo.curr_idx);
 //            m_labelmanager->setTopLayer(this);
         }
-        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==true && m_gtInfo.vehicle_mode==false){// Need to add more condition
+        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==true && m_gtInfo.vehicle_mode==false){
             m_gtInfo.is_chosen = true;
             m_labelmanager->setTopLayer(this);
 
             emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
         }
-        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==true){
+        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==false && m_gtInfo.vehicle_mode==false && m_gtInfo.is_adding_wheel==true){
+            m_labelmanager->setTopLayer(this);
+
+            emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
+        }
+        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false){
             m_gtInfo.is_chosen = false;
             if(m_gtInfo.is_first==false){
                 m_gtInfo.is_first = true;
             }
             m_labelmanager->setBottomLayer(this);
+
+//            qDebug() << "2-wheeler unchosen!!!";
         }
     }
     else if (event->button() == Qt::RightButton) {

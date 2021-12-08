@@ -15,7 +15,7 @@
 #include <QScrollBar>
 
 #include <fstream>
-//#include <iostream>
+#include <iostream>
 
 #include "InfoStructure.h"
 #include "json/json.h"
@@ -44,12 +44,16 @@ public:
         showSelectedBbox,
         showSelectedUnchoose,
         changeAngle,
-        enableDraw
+        enableDraw,
+        enableAddWheel
     };
 
     void setAllPath(QString const all_path);
     void setGTPath(QString const gt_path);
     void setImgPath(QString const img_path);
+    void setRearWheelPoint(float_t x, float_t y);
+    void setFrontWheelPoint(float_t x, float_t y);
+    void deleteWheelPoint();
 
     void setFrameNo(int32_t frame_no){
         this->curr_frame_no = frame_no;

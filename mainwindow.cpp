@@ -26,6 +26,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_labelmanager, SIGNAL(unselectOthers(int32_t)), m_dataloader, SLOT(unselectOthers(int32_t)));
     connect(m_labelmanager, SIGNAL(setMultiChosen()), m_dataloader, SLOT(setMultiChosen()));
+    connect(m_labelmanager, SIGNAL(setAddWheelMode(int32_t)), this, SLOT(setAddWheelMode(int32_t)));
     connect(m_labelmanager, SIGNAL(selectDraggedArea(Bbox &)), m_dataloader, SLOT(selectDraggedArea(Bbox &)));
     connect(m_labelmanager, SIGNAL(setRiderPoint(float_t, float_t)), m_dataloader, SLOT(setRiderPoint(float_t, float_t)));
 //    connect(m_labelmanager, SIGNAL(dragZoomFocusedArea(Bbox &)), m_dataloader, SLOT(dragZoomFocusedArea(Bbox &)));
@@ -48,6 +49,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lbl_front_txt->setPalette(front_palette);
     ui->lbl_front_txt->setFixedWidth(100);
 
+//    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
+//    ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
+
 }
 
 MainWindow::~MainWindow()
@@ -58,6 +62,16 @@ MainWindow::~MainWindow()
     delete m_dataloader;
     delete m_frontview;
     delete m_timer;
+}
+
+void MainWindow::setAddWheelMode(int32_t curr_idx){
+    ui->btn_add_rider->setEnabled(true);
+    ui->btn_enter_rear->setEnabled(false);
+    ui->lbl_rear_txt->setText("");
+    ui->btn_enter_front->setEnabled(false);
+    ui->lbl_front_txt->setText("");
+
+    emit m_labelmanager->unselectOthers(curr_idx);
 }
 
 void MainWindow::changeFrame(int32_t frame_no){
@@ -389,7 +403,7 @@ void MainWindow::on_radio_rider_clicked()
 {
     m_dataloader->setRiderMode();
     m_dataloader->editGTs(DataLoader::unchooseAll);
-    ui->btn_add_rider->setEnabled(true);
+//    ui->btn_add_rider->setEnabled(true);
 }
 
 void MainWindow::on_radio_normal_clicked()
@@ -423,6 +437,7 @@ void MainWindow::on_radio_zoom_clicked()
 
 void MainWindow::on_btn_add_rider_clicked()
 {
+    m_dataloader->editGTs(DataLoader::enableAddWheel);
     ui->btn_enter_rear->setEnabled(true);
     ui->btn_enter_front->setEnabled(false);
 
@@ -444,13 +459,15 @@ void MainWindow::on_btn_enter_rear_clicked()
 
     if(ui->lbl_rear_txt->text().size()!=0){// || ui->lbl_rear_txt->text()=="N/A"){
         QStringList x_y_coords = ui->lbl_rear_txt->text().split(", ");
-        new_rider.rear_x = x_y_coords[0].toFloat();
-        new_rider.rear_y = x_y_coords[1].toFloat();
+        m_dataloader->setRearWheelPoint(x_y_coords[0].toFloat(), x_y_coords[1].toFloat());
+//        new_rider.rear_x = x_y_coords[0].toFloat();
+//        new_rider.rear_y = x_y_coords[1].toFloat();
     }
     else{
         ui->lbl_rear_txt->setText("N/A");
-        new_rider.rear_x = 0.F;
-        new_rider.rear_y = 0.F;
+        m_dataloader->setRearWheelPoint(-1.F, -1.F);
+//        new_rider.rear_x = -1.F;
+//        new_rider.rear_y = -1.F;
     }
 }
 
@@ -463,19 +480,26 @@ void MainWindow::on_btn_enter_front_clicked()
 
     if(ui->lbl_front_txt->text().size()!=0){// || ui->lbl_front_txt->text()=="N/A"){
         QStringList x_y_coords = ui->lbl_front_txt->text().split(", ");
-        new_rider.front_x = x_y_coords[0].toFloat();
-        new_rider.front_y = x_y_coords[1].toFloat();
+        m_dataloader->setFrontWheelPoint(x_y_coords[0].toFloat(), x_y_coords[1].toFloat());
+//        new_rider.front_x = x_y_coords[0].toFloat();
+//        new_rider.front_y = x_y_coords[1].toFloat();
     }
     else{
         ui->lbl_front_txt->setText("N/A");
-        new_rider.front_x = 0.F;
-        new_rider.front_y = 0.F;
+        m_dataloader->setFrontWheelPoint(-1.F, -1.F);
+//        new_rider.front_x = -1.F;
+//        new_rider.front_y = -1.F;
     }
 
-    m_dataloader->addNewRider(new_rider);
+//    m_dataloader->addNewRider(new_rider);
 
     ui->lbl_rear_txt->setText("");
     ui->lbl_front_txt->setText("");
 
-    m_dataloader->showCurrRiderGTs();
+//    m_dataloader->showCurrRiderGTs();
+}
+
+void MainWindow::on_btn_delete_wheel_points_clicked()
+{
+    m_dataloader->deleteWheelPoint();
 }

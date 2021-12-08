@@ -35,6 +35,7 @@ struct GtInfo {
     bool move_resize = false;
 
     bool vehicle_mode = true;
+    bool zoom_mode = false;
     bool is_2_wheeler = false;
 
     int32_t curr_idx = -1;
@@ -45,6 +46,8 @@ struct GtInfo {
 //    Bbox_int zoom_drag_bbox;
     bool is_not_dragging = false;
 //    bool show_cls = false;
+
+    bool is_adding_wheel = false;
 
     bool is_valid = true;
 };

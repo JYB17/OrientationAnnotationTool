@@ -736,19 +736,35 @@ GTs and Images</string>
          </widget>
         </item>
         <item>
+         <widget class="QPushButton" name="btn_delete_wheel_points">
+          <property name="font">
+           <font>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>Delete bottom points (e)</string>
+          </property>
+          <property name="shortcut">
+           <string>E</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QPushButton" name="btn_add_rider">
           <property name="enabled">
            <bool>false</bool>
           </property>
           <property name="font">
            <font>
-            <pointsize>10</pointsize>
+            <pointsize>9</pointsize>
             <weight>75</weight>
             <bold>true</bold>
            </font>
           </property>
           <property name="text">
-           <string>Add 2-wheeler (a)</string>
+           <string>Add 2-wheeler bottom points (a)</string>
           </property>
           <property name="shortcut">
            <string>A</string>

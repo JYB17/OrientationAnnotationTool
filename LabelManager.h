@@ -34,6 +34,7 @@ signals:
     void setMultiChosen();
     void selectDraggedArea(Bbox &dragged_area);
     void setRiderPoint(float_t x, float_t y);
+    void setAddWheelMode(int32_t curr_idx);
 //    void dragZoomFocusedArea(float_t x, float_t y);
 ////    void dragZoomFocusedArea(Bbox &dragged_area);
 //    void setStartXY(float_t x, float_t y);
