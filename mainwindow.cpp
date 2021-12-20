@@ -22,16 +22,17 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(m_dataloader, SIGNAL(UpdateFrontImage(QImage*)), m_frontview, SLOT(UpdateFrontImage(QImage*)));
     connect(m_dataloader, SIGNAL(SetNewVideo(int32_t, int32_t)), this, SLOT(SetNewVideo(int32_t, int32_t)));
-    connect(m_dataloader, SIGNAL(updateGtInfos(QVector<GtInfo>&)), m_labelmanager, SLOT(drawAll(QVector<GtInfo>&)));
+    connect(m_dataloader, SIGNAL(updateGtInfos(QVector<GtInfo>&, bool)), m_labelmanager, SLOT(drawAll(QVector<GtInfo>&, bool)));
+//    connect(m_dataloader, SIGNAL(updateGtInfos(QVector<GtInfo>&)), m_labelmanager, SLOT(drawAll(QVector<GtInfo>&)));
 
     connect(m_labelmanager, SIGNAL(unselectOthers(int32_t)), m_dataloader, SLOT(unselectOthers(int32_t)));
     connect(m_labelmanager, SIGNAL(setMultiChosen()), m_dataloader, SLOT(setMultiChosen()));
-    connect(m_labelmanager, SIGNAL(setAddWheelMode(int32_t)), this, SLOT(setAddWheelMode(int32_t)));
     connect(m_labelmanager, SIGNAL(selectDraggedArea(Bbox &)), m_dataloader, SLOT(selectDraggedArea(Bbox &)));
     connect(m_labelmanager, SIGNAL(setRiderPoint(float_t, float_t)), m_dataloader, SLOT(setRiderPoint(float_t, float_t)));
-//    connect(m_labelmanager, SIGNAL(dragZoomFocusedArea(Bbox &)), m_dataloader, SLOT(dragZoomFocusedArea(Bbox &)));
-//    connect(m_labelmanager, SIGNAL(dragZoomFocusedArea(float_t, float_t)), m_dataloader, SLOT(dragZoomFocusedArea(float_t, float_t)));
-//    connect(m_labelmanager, SIGNAL(setStartXY(float_t, float_t)), m_dataloader, SLOT(setStartXY(float_t, float_t)));
+
+    connect(m_labelmanager, SIGNAL(setAddWheelMode(int32_t)), this, SLOT(setAddWheelMode(int32_t)));
+    connect(m_labelmanager, SIGNAL(clickBackground()), this, SLOT(clickBackground()));
+    connect(m_labelmanager, SIGNAL(setNewGtMode()), this, SLOT(setNewGtMode()));
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
@@ -49,9 +50,14 @@ MainWindow::MainWindow(QWidget *parent)
     ui->lbl_front_txt->setPalette(front_palette);
     ui->lbl_front_txt->setFixedWidth(100);
 
-//    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
-//    ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
+    ui->edit_frame_no->setMinimumWidth(90);
+    ui->edit_frame_no->setMaximumWidth(91);
 
+#ifdef _DEBUG
+    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
+    ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
+    ui->edit_save_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\save_temp");
+#endif
 }
 
 MainWindow::~MainWindow()
@@ -65,13 +71,25 @@ MainWindow::~MainWindow()
 }
 
 void MainWindow::setAddWheelMode(int32_t curr_idx){
-    ui->btn_add_rider->setEnabled(true);
+    if(m_dataloader->getGtInfo(curr_idx).is_svnet_rider==true){
+        ui->btn_add_rider->setEnabled(true);
+        ui->btn_enter_rear->setEnabled(false);
+        ui->lbl_rear_txt->setText("");
+        ui->btn_enter_front->setEnabled(false);
+        ui->lbl_front_txt->setText("");
+    }
+
+    emit m_labelmanager->unselectOthers(curr_idx);
+}
+
+void MainWindow::clickBackground(){
+    ui->btn_add_rider->setEnabled(false);
     ui->btn_enter_rear->setEnabled(false);
     ui->lbl_rear_txt->setText("");
     ui->btn_enter_front->setEnabled(false);
     ui->lbl_front_txt->setText("");
 
-    emit m_labelmanager->unselectOthers(curr_idx);
+    m_dataloader->mouseClickBackground();
 }
 
 void MainWindow::changeFrame(int32_t frame_no){
@@ -153,9 +171,10 @@ void MainWindow::on_actionLoad_Frame_Images_triggered()
 
 void MainWindow::on_btn_load_gts_imgs_clicked()
 {
-    if(ui->edit_gt_path->text()!="" && ui->edit_img_path->text()!=""){
+    if(ui->edit_gt_path->text()!="" && ui->edit_img_path->text()!="" && ui->edit_save_path->text()!=""){
         m_dataloader->setGTPath(ui->edit_gt_path->text());
         m_dataloader->setImgPath(ui->edit_img_path->text());
+        m_dataloader->setSavePath(ui->edit_save_path->text());
     }
 }
 
@@ -163,6 +182,10 @@ void MainWindow::SetNewVideo(int32_t img_width, int32_t img_height)
 {
     ui->btn_backward->setEnabled(true);
     ui->btn_forward->setEnabled(true);
+    ui->btn_forward_30->setEnabled(true);
+    ui->btn_backward_30->setEnabled(true);
+    ui->lbl_frame_no->setEnabled(true);
+    ui->btn_move_frame->setEnabled(true);
     ui->video_navigator->setEnabled(true);
     ui->btn_play_pause->setEnabled(true);
     ui->btn_save->setEnabled(true);
@@ -172,7 +195,9 @@ void MainWindow::SetNewVideo(int32_t img_width, int32_t img_height)
     ui->btn_unchoose_all->setEnabled(true);
     ui->btn_undo->setEnabled(true);
     ui->btn_redo->setEnabled(true);
+    ui->btn_init_save->setEnabled(true);
 
+    ui->check_show_orig->setEnabled(true);
     ui->check_selected_bbox->setEnabled(true);
     ui->check_show_bbox->setEnabled(true);
     ui->radio_normal->setEnabled(true);
@@ -214,6 +239,16 @@ void MainWindow::on_btn_backward_clicked()
     changeFrame(m_dataloader->getFrameNo()-1);
 }
 
+void MainWindow::on_btn_backward_30_clicked()
+{
+    changeFrame(m_dataloader->getFrameNo()-30);
+}
+
+void MainWindow::on_btn_forward_30_clicked()
+{
+    changeFrame(m_dataloader->getFrameNo()+30);
+}
+
 void MainWindow::on_video_navigator_valueChanged(int value)
 {
     changeFrame(value);
@@ -223,6 +258,9 @@ void MainWindow::play_video(){
     m_timer->start();
     ui->btn_backward->setEnabled(false);
     ui->btn_forward->setEnabled(false);
+    ui->btn_forward_30->setEnabled(false);
+    ui->btn_backward_30->setEnabled(false);
+    ui->btn_move_frame->setEnabled(false);
     ui->btn_save->setEnabled(false);
     ui->btn_reverse_angle->setEnabled(false);
     ui->btn_delete->setEnabled(false);
@@ -231,6 +269,7 @@ void MainWindow::play_video(){
     ui->btn_undo->setEnabled(false);
     ui->btn_redo->setEnabled(false);
     ui->btn_add_rider->setEnabled(false);
+    ui->btn_init_save->setEnabled(false);
 //    ui->btn_zoom_fit->setEnabled(false);
 }
 
@@ -238,6 +277,9 @@ void MainWindow::pause_video(){
     m_timer->stop();
     ui->btn_backward->setEnabled(true);
     ui->btn_forward->setEnabled(true);
+    ui->btn_forward_30->setEnabled(true);
+    ui->btn_backward_30->setEnabled(true);
+    ui->btn_move_frame->setEnabled(true);
     ui->btn_save->setEnabled(true);
     ui->btn_reverse_angle->setEnabled(true);
     ui->btn_delete->setEnabled(true);
@@ -245,6 +287,7 @@ void MainWindow::pause_video(){
     ui->btn_unchoose_all->setEnabled(true);
     ui->btn_undo->setEnabled(true);
     ui->btn_redo->setEnabled(true);
+    ui->btn_init_save->setEnabled(true);
     if(ui->radio_rider->isChecked()==true){
         ui->btn_add_rider->setEnabled(true);
     }
@@ -415,6 +458,7 @@ void MainWindow::on_radio_normal_clicked()
 
     m_dataloader->setRearEnabled(false);
     m_dataloader->setFrontEnabled(false);
+    m_dataloader->editGTs(DataLoader::unchooseAll);
 
     ui->lbl_rear_txt->setText("");
     ui->lbl_front_txt->setText("");
@@ -423,6 +467,7 @@ void MainWindow::on_radio_normal_clicked()
 void MainWindow::on_radio_zoom_clicked()
 {
     m_dataloader->zoomMode();
+    m_dataloader->editGTs(DataLoader::unchooseAll);
 
     ui->btn_add_rider->setEnabled(false);
     ui->btn_enter_rear->setEnabled(false);
@@ -502,4 +547,65 @@ void MainWindow::on_btn_enter_front_clicked()
 void MainWindow::on_btn_delete_wheel_points_clicked()
 {
     m_dataloader->deleteWheelPoint();
+    ui->btn_enter_rear->setEnabled(false);
+    ui->lbl_rear_txt->setText("");
+    ui->btn_enter_front->setEnabled(false);
+    ui->lbl_front_txt->setText("");
+}
+
+void MainWindow::on_btn_init_save_clicked()
+{
+    ui->check_show_orig->setChecked(true);
+    m_dataloader->setNewGtMode(false);
+
+    if(m_dataloader->checkOrigGtLoaded()==false){
+        m_dataloader->readJson();
+    }
+    m_dataloader->reInitGtInfos(ui->radio_normal->isChecked(), ui->radio_zoom->isChecked());
+
+    if(ui->radio_normal->isChecked()==true){
+        m_dataloader->setVehicleMode();
+    }
+    else if(ui->radio_rider->isChecked()==true){
+        m_dataloader->setRiderMode();
+    }
+    else{   // ui->radio_zoom->isChecked()==true
+        m_dataloader->zoomMode();
+    }
+
+    m_dataloader->saveCurrGT();
+}
+
+void MainWindow::setNewGtMode(){
+    ui->check_show_orig->setChecked(false);
+
+    m_dataloader->setNewGtMode(true);
+}
+
+void MainWindow::on_check_show_orig_clicked()
+{
+    m_dataloader->setNewGtMode(!(ui->check_show_orig->isChecked()));
+
+    if(ui->radio_normal->isChecked()==true){
+        m_dataloader->setVehicleMode();
+    }
+    else if(ui->radio_rider->isChecked()==true){
+        m_dataloader->setRiderMode();
+    }
+    else{   // ui->radio_zoom->isChecked()==true
+        m_dataloader->zoomMode();
+    }
+
+    if(ui->check_show_orig->isChecked()==true){
+        if(m_dataloader->checkOrigGtLoaded()==false){
+            m_dataloader->readJson();
+        }
+        m_dataloader->reInitGtInfos(ui->radio_normal->isChecked(), ui->radio_zoom->isChecked());
+    }
+}
+
+void MainWindow::on_btn_move_frame_clicked()
+{
+//    int32_t move_frame_no = ui->edit_frame_no->text().toInt();
+    changeFrame(ui->edit_frame_no->text().toInt()-1);
 }

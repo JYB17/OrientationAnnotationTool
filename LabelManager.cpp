@@ -11,7 +11,7 @@ LabelManager::~LabelManager()
 {
 }
 
-void LabelManager::drawAll(QVector<GtInfo> &gts_info)
+void LabelManager::drawAll(QVector<GtInfo> &gts_info, bool change_gt_mode)
 {
     for (auto& item : m_items) {
         delete item;
@@ -39,11 +39,10 @@ void LabelManager::drawAll(QVector<GtInfo> &gts_info)
 //        m_items.append(item);
 //        m_scene->addItem(item);
     }
-//    if(invalid_idx!=-1){
-//        gts_info.removeAt(invalid_idx);
-//        m_items.removeAt(invalid_idx);
-////        m_scene->removeItem(invalid_item);
-//    }
+
+    if(change_gt_mode==true){
+        emit setNewGtMode();
+    }
 }
 
 void LabelManager::setTopLayer(QGraphicsItem* item)

@@ -48,12 +48,28 @@ public:
         enableAddWheel
     };
 
+    void readJson();
+
     void setAllPath(QString const all_path);
     void setGTPath(QString const gt_path);
     void setImgPath(QString const img_path);
+    void setSavePath(QString const save_path);
+
     void setRearWheelPoint(float_t x, float_t y);
     void setFrontWheelPoint(float_t x, float_t y);
     void deleteWheelPoint();
+
+    bool checkOrigGtLoaded(){
+        return start_w_orig_gt;
+    }
+
+    void setNewGtMode(bool mode){
+        this->is_new_gt_mode = mode;
+    }
+
+    void mouseClickBackground(){
+        unselectOthers(-1);
+    }
 
     void setFrameNo(int32_t frame_no){
         this->curr_frame_no = frame_no;
@@ -63,6 +79,9 @@ public:
     }
     int32_t getNumFrames(){
         return this->num_frames;
+    }
+    GtInfo getGtInfo(int32_t idx){
+        return this->curr_gt_infos[idx];
     }
 
     void setRearEnabled(bool t_f){
@@ -74,7 +93,8 @@ public:
 
     void addNewRider(GtInfo &new_rider_gt);
 
-    void showCurrRiderGTs();
+//    void showCurrRiderGTs();
+    QString getSelectedRiderWheelPoints();
 
     void showFrame();
     void saveCurrGT();
@@ -90,11 +110,14 @@ public:
     void setRiderMode();
 
     void zoomMode();
+
+    void reInitGtInfos(bool vehicle_mode, bool zoom_mode);
 //    void SetDrawInfo(DrawInfo const* _draw_info);
 
 private:
     QString gt_path;
     QString img_path;
+    QString save_path;
 
     int32_t frame_width;
     int32_t frame_height;
@@ -112,6 +135,7 @@ private:
     int32_t curr_frame_no;
 
     QVector<GtInfo> curr_gt_infos;
+    QVector<GtInfo> orig_gt_infos;
 
     QVector<QVector<GtInfo>> prev_done_gts;
     int32_t undo_redo_idx;
@@ -131,9 +155,13 @@ private:
     int32_t drag_end_y;
     bool is_drag_mode = false;
 
+    bool is_new_gt_mode = false;
+
     void createQImage();
 
-    void readJson();
+    void copyOrigGT();
+
+//    void readJson();
     void savePrevInfos();
 
     bool unselect_target;
@@ -146,12 +174,15 @@ private:
 
     bool is_zoom_mode;
 
+    bool start_w_orig_gt = true;
+
 //    DrawInfo const* ptr_draw_info;
 
 signals:
     void UpdateFrontImage(QImage* img);
     void SetNewVideo(int32_t img_width, int32_t img_height);
-    void updateGtInfos(QVector<GtInfo> &gts_info);
+    void updateGtInfos(QVector<GtInfo> &gts_info, bool change_gt_mode);
+//    void updateGtInfos(QVector<GtInfo> &gts_info);
 
 protected:
     virtual bool eventFilter(QObject* obj, QEvent* event) override;

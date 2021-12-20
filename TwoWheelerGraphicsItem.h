@@ -47,6 +47,9 @@ private:
     float_t x_center;
     float_t y_center;
 
+//    float_t rect_w = 0.F;
+//    float_t rect_h = 0.F;
+
 //    float_t min_x;
 //    float_t min_y;
 //    float_t max_x;
@@ -63,8 +66,8 @@ private:
     bool multiple_chosen;
 
     float_t calculateAngleInImage(float_t orig_angle){
-        return 0.F;
-//        return 360.F*DEG2RAD - (orig_angle*DEG2RAD + 90.F*DEG2RAD);
+//        return 0.F;
+        return 360.F*DEG2RAD - (orig_angle*DEG2RAD + 90.F*DEG2RAD);
     }
 
 protected:

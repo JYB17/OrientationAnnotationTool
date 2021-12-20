@@ -3,52 +3,21 @@
 TwoWheelerGraphicsItem::TwoWheelerGraphicsItem(LabelManager* label_manager, GtInfo& gt_info, int zValue):
     m_gtInfo(gt_info)
 {
+    float_t rect_w = gt_info.bbox.x2 - gt_info.bbox.x1;
+    float_t rect_h = gt_info.bbox.y2 - gt_info.bbox.y1;
+
+//    m_rect.setX(m_gtInfo.bbox.x1-0.5F*rect_w);
+//    m_rect.setY(m_gtInfo.bbox.y1);
+//    m_rect.setWidth(rect_w*2.F);
+//    m_rect.setHeight(rect_h*1.25F);
+
     m_rect.setX(gt_info.bbox.x1);
     m_rect.setY(gt_info.bbox.y1);
-    m_rect.setWidth(gt_info.bbox.x2 - gt_info.bbox.x1);
-    m_rect.setHeight(gt_info.bbox.y2 - gt_info.bbox.y1);
+    m_rect.setWidth(rect_w);
+    m_rect.setHeight(rect_h);
 
     x_center = (gt_info.bbox.x2 + gt_info.bbox.x1)/2.F;
     y_center = (gt_info.bbox.y2 + gt_info.bbox.y1)/2.F;
-
-//    float_t min_x = std::min(gt_info.front_x, gt_info.rear_x);
-//    float_t min_y = std::min(gt_info.front_y, gt_info.rear_y);
-//    float_t max_x = std::max(gt_info.front_x, gt_info.rear_x);
-//    float_t max_y = std::max(gt_info.front_y, gt_info.rear_y);
-
-//    m_rect.setX(min_x);
-//    m_rect.setY(min_y);
-//    m_rect.setWidth(max_x - min_x);
-//    m_rect.setHeight(max_y - min_y);
-
-//    x_center = (min_x + max_x)/2.F;
-//    y_center = (min_y + max_y)/2.F;
-
-//    if((gt_info.front_x==0 && gt_info.front_y==0) || (gt_info.rear_x==0 && gt_info.rear_y==0)){
-//        m_rect.setX(max_x-25.F);
-//        m_rect.setY(max_y-25.F);
-//        m_rect.setWidth(30.F);
-//        m_rect.setHeight(30.F);
-
-//        x_center = 10.F;
-//        y_center = 10.F;
-//        if(gt_info.is_valid==false){
-//            m_rect.setX(max_x-2.F);
-//            m_rect.setY(max_y-2.F);
-//            m_rect.setWidth(4.F);
-//            m_rect.setHeight(4.F);
-//        }
-////        has_one_wheel = true;
-//    }
-//    else{
-//        m_rect.setX(min_x);
-//        m_rect.setY(min_y);
-//        m_rect.setWidth(max_x - min_x);
-//        m_rect.setHeight(max_y - min_y);
-
-//        x_center = (min_x + max_x)/2.F;
-//        y_center = (min_y + max_y)/2.F;
-//    }
 
     setFlags(ItemIsMovable | ItemSendsGeometryChanges);
     setAcceptHoverEvents(true);
@@ -69,10 +38,11 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
     }
     if(m_gtInfo.draw_enabled==true && m_gtInfo.is_background==false){
         QPen pen = painter->pen();
-        pen.setWidth(2);
         painter->setPen(pen);
 
-        QColor box_color = Qt::blue;
+        float_t rect_w = m_gtInfo.bbox.x2 - m_gtInfo.bbox.x1;
+        float_t rect_h = m_gtInfo.bbox.y2 - m_gtInfo.bbox.y1;
+
         if(m_gtInfo.is_chosen==true){
 //            box_color = Qt::magenta;
             QBrush brush(Qt::white);
@@ -80,32 +50,91 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
             pen.setColor(Qt::white);
             pen.setWidth(4);
             painter->setPen(pen);
-            painter->drawRect(m_gtInfo.bbox.x1 - 6,m_gtInfo.bbox.y1 - 6, 12, 12);
-            painter->drawRect(m_gtInfo.bbox.x1 - 6,m_gtInfo.bbox.y2 - 6, 12, 12);
-            painter->drawRect(m_gtInfo.bbox.x2 - 6,m_gtInfo.bbox.y1 - 6, 12, 12);
-            painter->drawRect(m_gtInfo.bbox.x2 - 6,m_gtInfo.bbox.y2 - 6, 12, 12);
+            if(m_gtInfo.is_svnet_rider==true){
+                painter->drawRect(m_gtInfo.bbox.x1 - 6,m_gtInfo.bbox.y1 - 6, 12, 12);
+                painter->drawRect(m_gtInfo.bbox.x1 - 6,m_gtInfo.bbox.y2 - 6, 12, 12);
+                painter->drawRect(m_gtInfo.bbox.x2 - 6,m_gtInfo.bbox.y1 - 6, 12, 12);
+                painter->drawRect(m_gtInfo.bbox.x2 - 6,m_gtInfo.bbox.y2 - 6, 12, 12);
+            }
+            else{
+                painter->drawRect(m_gtInfo.x[0] - 6,m_gtInfo.y[0] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[1] - 6,m_gtInfo.y[1] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[2] - 6,m_gtInfo.y[2] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[3] - 6,m_gtInfo.y[3] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[4] - 6,m_gtInfo.y[4] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[5] - 6,m_gtInfo.y[5] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[6] - 6,m_gtInfo.y[6] - 6, 12, 12);
+                painter->drawRect(m_gtInfo.x[7] - 6,m_gtInfo.y[7] - 6, 12, 12);
+            }
+
+            m_rect.setX(m_gtInfo.bbox.x1-0.5F*rect_w);
+            m_rect.setY(m_gtInfo.bbox.y1);
+            m_rect.setWidth(rect_w*2.F);
+            m_rect.setHeight(rect_h*1.25F);
+
+            pen.setWidth(1);
+            pen.setColor(Qt::gray);
+            painter->setPen(pen);
+            painter->setBrush(Qt::transparent);
+            painter->drawRect(m_rect.x(), m_rect.y(), m_rect.width(), m_rect.height());
         }
+        else{
+            m_rect.setX(m_gtInfo.bbox.x1);
+            m_rect.setY(m_gtInfo.bbox.y1);
+            m_rect.setWidth(rect_w);
+            m_rect.setHeight(rect_h);
+        }
+
         pen.setColor(Qt::yellow);
+        pen.setWidth(2);
         painter->setPen(pen);
         painter->setBrush(Qt::transparent);
-        painter->drawRect(m_gtInfo.bbox.x1, m_gtInfo.bbox.y1, m_gtInfo.bbox.x2-m_gtInfo.bbox.x1, m_gtInfo.bbox.y2-m_gtInfo.bbox.y1);
 
-        QBrush brush(Qt::yellow);
-        painter->setBrush(brush);
-        pen.setWidth(1);
-        painter->setPen(pen);
+        if(m_gtInfo.is_svnet_rider==true){
+            painter->drawRect(m_gtInfo.bbox.x1, m_gtInfo.bbox.y1, m_gtInfo.bbox.x2-m_gtInfo.bbox.x1, m_gtInfo.bbox.y2-m_gtInfo.bbox.y1);
 
-        if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F)){
-            painter->drawRect(m_gtInfo.front_x-2.F, m_gtInfo.front_y-2.F, 4, 4);
-        }
-        if(!(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
-            painter->drawRect(m_gtInfo.rear_x-2.F, m_gtInfo.rear_y-2.F, 4, 4);
-        }
-
-        if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F) && !(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
-            pen.setColor(Qt::yellow);
+            QBrush brush(Qt::magenta);
+            pen.setColor(Qt::magenta);
+            painter->setBrush(brush);
             painter->setPen(pen);
-            painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
+
+            if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F)){
+                painter->drawRect(m_gtInfo.front_x-2.F, m_gtInfo.front_y-2.F, 4, 4);
+            }
+            if(!(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
+                painter->drawRect(m_gtInfo.rear_x-2.F, m_gtInfo.rear_y-2.F, 4, 4);
+            }
+
+            if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F) && !(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
+                painter->setPen(pen);
+                painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
+            }
+        }
+        else{
+            painter->drawLine(m_gtInfo.x[0], m_gtInfo.y[0], m_gtInfo.x[1], m_gtInfo.y[1]);
+            painter->drawLine(m_gtInfo.x[1], m_gtInfo.y[1], m_gtInfo.x[3], m_gtInfo.y[3]);
+            painter->drawLine(m_gtInfo.x[2], m_gtInfo.y[2], m_gtInfo.x[0], m_gtInfo.y[0]);
+            painter->drawLine(m_gtInfo.x[3], m_gtInfo.y[3], m_gtInfo.x[2], m_gtInfo.y[2]);
+
+            painter->drawLine(m_gtInfo.x[4], m_gtInfo.y[4], m_gtInfo.x[5], m_gtInfo.y[5]);
+            painter->drawLine(m_gtInfo.x[5], m_gtInfo.y[5], m_gtInfo.x[7], m_gtInfo.y[7]);
+            painter->drawLine(m_gtInfo.x[6], m_gtInfo.y[6], m_gtInfo.x[4], m_gtInfo.y[4]);
+            painter->drawLine(m_gtInfo.x[7], m_gtInfo.y[7], m_gtInfo.x[6], m_gtInfo.y[6]);
+
+            painter->drawLine(m_gtInfo.x[0], m_gtInfo.y[0], m_gtInfo.x[4], m_gtInfo.y[4]);
+            painter->drawLine(m_gtInfo.x[1], m_gtInfo.y[1], m_gtInfo.x[5], m_gtInfo.y[5]);
+            painter->drawLine(m_gtInfo.x[2], m_gtInfo.y[2], m_gtInfo.x[6], m_gtInfo.y[6]);
+            painter->drawLine(m_gtInfo.x[3], m_gtInfo.y[3], m_gtInfo.x[7], m_gtInfo.y[7]);
+
+            pen.setColor(Qt::magenta);
+            painter->setPen(pen);
+            painter->drawText(x_center, y_center, QString::number(m_gtInfo.dir_angle));
+            float_t draw_angle = calculateAngleInImage(m_gtInfo.dir_angle);
+            float_t x_end = x_center+50.F*cos(draw_angle);
+            float_t y_end = y_center+50.F*sin(draw_angle);
+            painter->drawLine(x_center, y_center, x_end, y_end);
+            painter->drawLine(x_end, y_end, x_center+45.F*cos(calculateAngleInImage(m_gtInfo.dir_angle-10.F)), y_center+45.F*sin(calculateAngleInImage(m_gtInfo.dir_angle-10.F)));
+            painter->drawLine(x_end, y_end, x_center+45.F*cos(calculateAngleInImage(m_gtInfo.dir_angle+10.F)), y_center+45.F*sin(calculateAngleInImage(m_gtInfo.dir_angle+10.F)));
         }
 
         widget->update();

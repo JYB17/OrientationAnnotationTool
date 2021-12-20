@@ -8,6 +8,9 @@
 
 #include "InfoStructure.h"
 
+constexpr float_t RAD2DEG = 180.F / 3.141592F;
+constexpr float_t DEG2RAD = 1.F / RAD2DEG;
+
 class LabelManager : public QObject
 {
     Q_OBJECT
@@ -31,16 +34,17 @@ signals:
     void saveUndoRedo();
 
     void unselectOthers(int32_t curr_idx);
+    void clickBackground();
     void setMultiChosen();
     void selectDraggedArea(Bbox &dragged_area);
     void setRiderPoint(float_t x, float_t y);
     void setAddWheelMode(int32_t curr_idx);
-//    void dragZoomFocusedArea(float_t x, float_t y);
-////    void dragZoomFocusedArea(Bbox &dragged_area);
-//    void setStartXY(float_t x, float_t y);
+
+    void setNewGtMode();
 
 private slots:
-    void drawAll(QVector<GtInfo> &gts_info);
+    void drawAll(QVector<GtInfo> &gts_info, bool change_gt_mode);
+//    void drawAll(QVector<GtInfo> &gts_info);
 
 };
 

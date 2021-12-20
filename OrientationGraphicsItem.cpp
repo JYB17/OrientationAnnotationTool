@@ -193,7 +193,8 @@ void OrientationGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
 //        else{
 //            emit m_labelmanager->unselectOthers(-1);
 //        }
-        emit m_labelmanager->unselectOthers(-1);
+//        emit m_labelmanager->unselectOthers(-1);
+        emit m_labelmanager->clickBackground();
     }
 //    else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==false && event->button() == Qt::LeftButton){
 //        // zoom dragging

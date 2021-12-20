@@ -76,9 +76,21 @@ private slots:
 
     void on_btn_load_gts_imgs_clicked();
 
-    void setAddWheelMode(int32_t curr_idx);
-
     void on_btn_delete_wheel_points_clicked();
+
+    void on_btn_init_save_clicked();
+
+    void on_check_show_orig_clicked();
+
+    void setAddWheelMode(int32_t curr_idx);
+    void clickBackground();
+    void setNewGtMode();
+
+    void on_btn_backward_30_clicked();
+
+    void on_btn_forward_30_clicked();
+
+    void on_btn_move_frame_clicked();
 
 private:
     void changeFrame(int32_t frame_no);

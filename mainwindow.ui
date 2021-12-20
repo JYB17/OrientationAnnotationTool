@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1640</width>
+    <width>1644</width>
     <height>765</height>
    </rect>
   </property>
@@ -55,6 +55,9 @@
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QLineEdit" name="edit_save_path"/>
+            </item>
            </layout>
           </item>
           <item row="1" column="2">
@@ -100,6 +103,19 @@ GTs and Images</string>
               </property>
              </widget>
             </item>
+            <item>
+             <widget class="QLabel" name="lbl_save_path">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Save path</string>
+              </property>
+             </widget>
+            </item>
            </layout>
           </item>
          </layout>
@@ -109,7 +125,7 @@ GTs and Images</string>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout">
             <item>
-             <widget class="QPushButton" name="btn_prev_video">
+             <widget class="QPushButton" name="btn_backward_30">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -121,7 +137,7 @@ GTs and Images</string>
                </font>
               </property>
               <property name="text">
-               <string>|&lt;
+               <string>&lt;&lt;&lt;&lt;
 (q)</string>
               </property>
               <property name="shortcut">
@@ -211,7 +227,7 @@ GTs and Images</string>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="btn_next_video">
+             <widget class="QPushButton" name="btn_forward_30">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -223,7 +239,7 @@ GTs and Images</string>
                </font>
               </property>
               <property name="text">
-               <string>&gt;|
+               <string>&gt;&gt;&gt;&gt;
 (t)</string>
               </property>
               <property name="shortcut">
@@ -270,6 +286,27 @@ GTs and Images</string>
               </property>
               <property name="shortcut">
                <string>Ctrl+S</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="btn_init_save">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="font">
+               <font>
+                <pointsize>10</pointsize>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Save orig GTs
+(Ctrl+g)</string>
+              </property>
+              <property name="shortcut">
+               <string>Ctrl+G</string>
               </property>
              </widget>
             </item>
@@ -491,10 +528,10 @@ GTs and Images</string>
                  </font>
                 </property>
                 <property name="text">
-                 <string>Two-wheeler mode (t)</string>
+                 <string>2-wheeler mode (2)</string>
                 </property>
                 <property name="shortcut">
-                 <string>T</string>
+                 <string>2</string>
                 </property>
                 <attribute name="buttonGroup">
                  <string notr="true">buttonGroup</string>
@@ -531,14 +568,86 @@ GTs and Images</string>
          </layout>
         </item>
         <item>
-         <widget class="QSlider" name="video_navigator">
-          <property name="enabled">
-           <bool>false</bool>
-          </property>
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
+         <layout class="QHBoxLayout" name="horizontalLayout_9">
+          <item>
+           <widget class="QSlider" name="video_navigator">
+            <property name="enabled">
+             <bool>false</bool>
+            </property>
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QVBoxLayout" name="verticalLayout_11">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_8">
+              <item>
+               <widget class="QLabel" name="label">
+                <property name="text">
+                 <string>  </string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLabel" name="lbl_frame_no">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Frame No.</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QLineEdit" name="edit_frame_no">
+                <property name="sizePolicy">
+                 <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+                  <horstretch>0</horstretch>
+                  <verstretch>0</verstretch>
+                 </sizepolicy>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="btn_move_frame">
+                <property name="enabled">
+                 <bool>false</bool>
+                </property>
+                <property name="font">
+                 <font>
+                  <pointsize>10</pointsize>
+                  <weight>75</weight>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string>Move</string>
+                </property>
+                <property name="shortcut">
+                 <string>Return</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6"/>
         </item>
         <item>
          <widget class="QGraphicsView" name="canvas">
@@ -617,6 +726,29 @@ GTs and Images</string>
          <widget class="QLabel" name="lbl_empty_top">
           <property name="text">
            <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="check_show_orig">
+          <property name="enabled">
+           <bool>false</bool>
+          </property>
+          <property name="font">
+           <font>
+            <pointsize>10</pointsize>
+            <weight>75</weight>
+            <bold>true</bold>
+           </font>
+          </property>
+          <property name="text">
+           <string>show orig GTs (g)</string>
+          </property>
+          <property name="shortcut">
+           <string>G</string>
+          </property>
+          <property name="checked">
+           <bool>true</bool>
           </property>
          </widget>
         </item>
@@ -793,10 +925,10 @@ GTs and Images</string>
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>Enter</string>
+             <string>Enter (~)</string>
             </property>
             <property name="shortcut">
-             <string>Return</string>
+             <string>`</string>
             </property>
            </widget>
           </item>
@@ -827,14 +959,21 @@ GTs and Images</string>
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>Enter</string>
+             <string>Enter (~)</string>
             </property>
             <property name="shortcut">
-             <string>Return</string>
+             <string>`</string>
             </property>
            </widget>
           </item>
          </layout>
+        </item>
+        <item>
+         <widget class="QLabel" name="lbl_wheel_info">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
         </item>
         <item>
          <widget class="QLabel" name="lbl_empty_3">
@@ -893,7 +1032,7 @@ GTs and Images</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1640</width>
+     <width>1644</width>
      <height>21</height>
     </rect>
    </property>

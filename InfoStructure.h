@@ -26,8 +26,9 @@ struct GtInfo {
     float_t dir_angle{};
     float_t x[8]{}, y[8]{};
     float_t X{}, Y{};
-    float_t rear_x{}, rear_y{};
-    float_t front_x{}, front_y{};
+    float_t rear_x{-1.F}, rear_y{-1.F};
+    float_t front_x{-1.F}, front_y{-1.F};
+    float_t score{};
 
     bool draw_enabled = true;
     bool is_first = true;
@@ -37,6 +38,7 @@ struct GtInfo {
     bool vehicle_mode = true;
     bool zoom_mode = false;
     bool is_2_wheeler = false;
+    bool is_svnet_rider = false;
 
     int32_t curr_idx = -1;
     bool multi_chosen = false;

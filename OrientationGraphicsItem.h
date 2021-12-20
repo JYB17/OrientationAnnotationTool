@@ -12,9 +12,6 @@
 #include "InfoStructure.h"
 #include "LabelManager.h"
 
-constexpr float_t RAD2DEG = 180.F / 3.141592F;
-constexpr float_t DEG2RAD = 1.F / RAD2DEG;
-
 class OrientationGraphicsItem : public QGraphicsItem {
 
     enum eResizeDirection {

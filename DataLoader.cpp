@@ -77,6 +77,10 @@ void DataLoader::setImgPath(QString const img_path)
 //    viewText->setText("Successfully loaded " + QString::number(num_frames) + " GT files and frame images!");
 }
 
+void DataLoader::setSavePath(QString const save_path){
+    this->save_path = save_path;
+}
+
 void DataLoader::showFrame(){
     curr_img_name = img_path + "\\" + files_list[curr_frame_no] + ".png";
 //    curr_gt_name = gt_path + "\\" + files_list[curr_frame_no] + ".json";
@@ -97,10 +101,10 @@ void DataLoader::showFrame(){
     emit UpdateFrontImage(curr_img);
 
     readJson();
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, false);
 
     QStringList splitted = curr_gt_name.split("\\");
-    viewText->setText(splitted[splitted.size()-1]);
+    viewText->setText(splitted[splitted.size()-1] + " (" + QString::number(curr_frame_no+1) + "/" + QString::number(num_frames) + ")");
 }
 
 void DataLoader::savePrevInfos()
@@ -136,6 +140,7 @@ void DataLoader::savePrevInfos()
         prev_gt.rear_y = curr_gt_infos[i].rear_y;
         prev_gt.front_x = curr_gt_infos[i].front_x;
         prev_gt.front_y = curr_gt_infos[i].front_y;
+        prev_gt.is_svnet_rider = curr_gt_infos[i].is_svnet_rider;
         prev_gts.append(prev_gt);
     }
     prev_done_gts.append(prev_gts);
@@ -158,7 +163,7 @@ void DataLoader::unDo()
     }
     undo_flag = true;
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 void DataLoader::reDo()
 {
@@ -170,25 +175,129 @@ void DataLoader::reDo()
         undo_redo_idx = std::min(undo_redo_idx+1, prev_done_gts.size()-1);
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
+}
+
+void DataLoader::copyOrigGT(){
+    orig_gt_infos.clear();
+
+    int32_t num_gts = curr_gt_infos.size();
+    for(int32_t i=0; i<num_gts; i++){
+        GtInfo orig_gt;
+        orig_gt.bbox.x1 = curr_gt_infos[i].bbox.x1;
+        orig_gt.bbox.y1 = curr_gt_infos[i].bbox.y1;
+        orig_gt.bbox.x2 = curr_gt_infos[i].bbox.x2;
+        orig_gt.bbox.y2 = curr_gt_infos[i].bbox.y2;
+        for(int32_t j=0; j<8; j++){
+            orig_gt.x[j] = curr_gt_infos[i].x[j];
+            orig_gt.y[j] = curr_gt_infos[i].y[j];
+        }
+        orig_gt.rear_x = curr_gt_infos[i].rear_x;
+        orig_gt.rear_y = curr_gt_infos[i].rear_y;
+        orig_gt.front_x = curr_gt_infos[i].front_x;
+        orig_gt.front_y = curr_gt_infos[i].front_y;
+
+        orig_gt.dir_angle = curr_gt_infos[i].dir_angle;
+        orig_gt.score = curr_gt_infos[i].score;
+
+        orig_gt.draw_enabled = curr_gt_infos[i].draw_enabled;
+        orig_gt.is_first = curr_gt_infos[i].is_first;
+        orig_gt.is_chosen = curr_gt_infos[i].is_chosen;
+        orig_gt.move_resize = curr_gt_infos[i].move_resize;
+        orig_gt.vehicle_mode = curr_gt_infos[i].vehicle_mode;
+        orig_gt.zoom_mode = curr_gt_infos[i].zoom_mode;
+        orig_gt.is_2_wheeler = curr_gt_infos[i].is_2_wheeler;
+        orig_gt.is_svnet_rider = curr_gt_infos[i].is_svnet_rider;
+        orig_gt.curr_idx = curr_gt_infos[i].curr_idx;
+        orig_gt.multi_chosen = curr_gt_infos[i].multi_chosen;
+        orig_gt.is_background = curr_gt_infos[i].is_background;
+        orig_gt.is_not_dragging = curr_gt_infos[i].is_not_dragging;
+        orig_gt.is_adding_wheel = curr_gt_infos[i].is_adding_wheel;
+        orig_gt.is_valid = curr_gt_infos[i].is_valid;
+
+        orig_gt_infos.append(orig_gt);
+    }
+}
+
+void DataLoader::reInitGtInfos(bool vehicle_mode, bool zoom_mode){
+    savePrevInfos();
+
+    curr_gt_infos.clear();
+
+    int32_t num_gts = orig_gt_infos.size();
+    for(int32_t i=0; i<num_gts; i++){
+        GtInfo orig_gt;
+        orig_gt.bbox.x1 = orig_gt_infos[i].bbox.x1;
+        orig_gt.bbox.y1 = orig_gt_infos[i].bbox.y1;
+        orig_gt.bbox.x2 = orig_gt_infos[i].bbox.x2;
+        orig_gt.bbox.y2 = orig_gt_infos[i].bbox.y2;
+        for(int32_t j=0; j<8; j++){
+            orig_gt.x[j] = orig_gt_infos[i].x[j];
+            orig_gt.y[j] = orig_gt_infos[i].y[j];
+        }
+        orig_gt.rear_x = orig_gt_infos[i].rear_x;
+        orig_gt.rear_y = orig_gt_infos[i].rear_y;
+        orig_gt.front_x = orig_gt_infos[i].front_x;
+        orig_gt.front_y = orig_gt_infos[i].front_y;
+
+        orig_gt.dir_angle = orig_gt_infos[i].dir_angle;
+        orig_gt.score = orig_gt_infos[i].score;
+
+        orig_gt.vehicle_mode = vehicle_mode;
+        orig_gt.zoom_mode = zoom_mode;
+
+        orig_gt.draw_enabled = orig_gt_infos[i].draw_enabled;
+        orig_gt.is_first = orig_gt_infos[i].is_first;
+        orig_gt.is_chosen = orig_gt_infos[i].is_chosen;
+        orig_gt.move_resize = orig_gt_infos[i].move_resize;
+//        orig_gt.vehicle_mode = orig_gt_infos[i].vehicle_mode;
+//        orig_gt.zoom_mode = orig_gt_infos[i].zoom_mode;
+        orig_gt.is_2_wheeler = orig_gt_infos[i].is_2_wheeler;
+        orig_gt.is_svnet_rider = orig_gt_infos[i].is_svnet_rider;
+        orig_gt.curr_idx = orig_gt_infos[i].curr_idx;
+        orig_gt.multi_chosen = orig_gt_infos[i].multi_chosen;
+        orig_gt.is_background = orig_gt_infos[i].is_background;
+        orig_gt.is_not_dragging = orig_gt_infos[i].is_not_dragging;
+        orig_gt.is_adding_wheel = orig_gt_infos[i].is_adding_wheel;
+        orig_gt.is_valid = orig_gt_infos[i].is_valid;
+
+        curr_gt_infos.append(orig_gt);
+    }
+
+    emit updateGtInfos(curr_gt_infos, false);
 }
 
 void DataLoader::readJson(){
     curr_gt_infos.clear();
 
     curr_gt_name = gt_path + "\\" + files_list[curr_frame_no] + ".json";
+    if(is_new_gt_mode==true){
+        curr_gt_name = save_path + "\\" + files_list[curr_frame_no] + ".json";
+    }
 
     QFile log_file(curr_gt_name);
     if (!log_file.open(QIODevice::ReadOnly)) {
-        QString outputText = "Cannot find " + curr_gt_name + "!";
-        viewText->setText(outputText);
-        return;
+        if(is_new_gt_mode==false){
+            QString outputText = "Cannot find " + curr_gt_name + "!";
+            viewText->setText(outputText);
+            return;
+        }
+        curr_gt_name = gt_path + "\\" + files_list[curr_frame_no] + ".json";
+
+        log_file.setFileName(curr_gt_name);
+        if (!log_file.open(QIODevice::ReadOnly)) {
+            if(is_new_gt_mode==false){
+                QString outputText = "Cannot find " + curr_gt_name + "!";
+                viewText->setText(outputText);
+                return;
+            }
+        }
     }
 
     QByteArray log_data = log_file.readAll();
     QJsonDocument log_doc(QJsonDocument::fromJson(log_data));
-//    int32_t num_objs = log_doc.object()["num_objs"].toInt();
     QJsonArray curr_objs = log_doc.object()["objects"].toArray();
+//    int32_t num_objs = log_doc.object()["num_objs"].toInt();
     int32_t num_objs = curr_objs.size();
     for(int32_t i=0; i<num_objs; i++){
         QJsonObject curr_obj = curr_objs[i].toObject();
@@ -197,48 +306,41 @@ void DataLoader::readJson(){
         curr_gt.bbox.y1 = curr_obj["bbox"].toArray()[1].toDouble();
         curr_gt.bbox.x2 = curr_obj["bbox"].toArray()[2].toDouble();
         curr_gt.bbox.y2 = curr_obj["bbox"].toArray()[3].toDouble();
-        if(curr_obj.contains("obj_cls") && curr_obj["obj_cls"].toString()=="two-wheeler"){
+
+        if(curr_obj["X"].isArray())
+            curr_gt.X = curr_obj["X"].toArray()[0].toDouble();
+        else
+            curr_gt.X = curr_obj["X"].toDouble();
+
+        if(curr_obj["Y"].isArray())
+            curr_gt.Y = curr_obj["Y"].toArray()[0].toDouble();
+        else
+            curr_gt.Y = curr_obj["Y"].toDouble();
+
+        int32_t bbox_3d_size = curr_obj["bbox_3d"].toObject()["x"].toArray().size();
+        if(bbox_3d_size==2){
             curr_gt.is_2_wheeler = true;
-//            curr_gt.rear_x = curr_obj["rear_wheel"].toArray()[0].toDouble()==-1 ? 0 : curr_obj["rear_wheel"].toArray()[0].toDouble();
-//            curr_gt.rear_y = curr_obj["rear_wheel"].toArray()[1].toDouble()==-1 ? 0 : curr_obj["rear_wheel"].toArray()[1].toDouble();
-//            curr_gt.front_x = curr_obj["front_wheel"].toArray()[0].toDouble()==-1 ? 0 : curr_obj["front_wheel"].toArray()[0].toDouble();
-//            curr_gt.front_y = curr_obj["front_wheel"].toArray()[1].toDouble()==-1 ? 0 : curr_obj["front_wheel"].toArray()[1].toDouble();
+            curr_gt.is_svnet_rider = true;
             curr_gt.rear_x = curr_obj["bbox_3d"].toObject()["x"].toArray()[0].toDouble();
             curr_gt.rear_y = curr_obj["bbox_3d"].toObject()["y"].toArray()[0].toDouble();
             curr_gt.front_x = curr_obj["bbox_3d"].toObject()["x"].toArray()[1].toDouble();
             curr_gt.front_y = curr_obj["bbox_3d"].toObject()["y"].toArray()[1].toDouble();
         }
         else{
-            if(curr_obj["X"].isArray())
-                curr_gt.X = curr_obj["X"].toArray()[0].toDouble();
-            else
-                curr_gt.X = curr_obj["X"].toDouble();
-
-            if(curr_obj["Y"].isArray())
-                curr_gt.Y = curr_obj["Y"].toArray()[0].toDouble();
-            else
-                curr_gt.Y = curr_obj["Y"].toDouble();
-
-//            curr_gt.bbox.x1 = curr_obj["bbox"].toArray()[0].toDouble();
-//            curr_gt.bbox.y1 = curr_obj["bbox"].toArray()[1].toDouble();
-//            curr_gt.bbox.x2 = curr_obj["bbox"].toArray()[2].toDouble();
-//            curr_gt.bbox.y2 = curr_obj["bbox"].toArray()[3].toDouble();
-            int32_t bbox_3d_size = curr_obj["bbox_3d"].toObject()["x"].toArray().size();
-            if(bbox_3d_size==2){
+            if(curr_obj["label"].toDouble()==3.F){
                 curr_gt.is_2_wheeler = true;
-                curr_gt.rear_x = curr_obj["bbox_3d"].toObject()["x"].toArray()[0].toDouble();
-                curr_gt.rear_y = curr_obj["bbox_3d"].toObject()["y"].toArray()[0].toDouble();
-                curr_gt.front_x = curr_obj["bbox_3d"].toObject()["x"].toArray()[1].toDouble();
-                curr_gt.front_y = curr_obj["bbox_3d"].toObject()["y"].toArray()[1].toDouble();
             }
-            else{
-                for(int32_t j=0; j<bbox_3d_size; j++){
-                    curr_gt.x[j] = curr_obj["bbox_3d"].toObject()["x"].toArray()[j].toDouble();
-                    curr_gt.y[j] = curr_obj["bbox_3d"].toObject()["y"].toArray()[j].toDouble();
-                }
+            for(int32_t j=0; j<bbox_3d_size; j++){
+                curr_gt.x[j] = curr_obj["bbox_3d"].toObject()["x"].toArray()[j].toDouble();
+                curr_gt.y[j] = curr_obj["bbox_3d"].toObject()["y"].toArray()[j].toDouble();
             }
-            curr_gt.dir_angle = curr_obj["dir_angle"].toDouble();
         }
+        curr_gt.score = curr_obj["score"].toDouble();
+        curr_gt.dir_angle = curr_obj["dir_angle"].toDouble();
+        if(!(curr_gt.dir_angle<360.F)){
+            curr_gt.dir_angle -= 360.F;
+        }
+
         curr_gt_infos.push_back(curr_gt);
     }
     if(is_zoom_mode==false){
@@ -250,6 +352,14 @@ void DataLoader::readJson(){
         background.bbox.y2 = frame_height;
         curr_gt_infos.push_back(background);
     }
+
+    if(is_new_gt_mode==false){
+        copyOrigGT();
+        start_w_orig_gt = true;
+    }
+    else{
+        start_w_orig_gt = false;
+    }
 }
 
 void DataLoader::addNewRider(GtInfo &new_rider_gt){
@@ -259,12 +369,11 @@ void DataLoader::addNewRider(GtInfo &new_rider_gt){
         curr_gt_infos.append(new_rider_gt);
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 
 void DataLoader::saveCurrGT(){
-//    std::ofstream out_file("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\labeling_tool\\temp_saved\\temp_"+std::to_string(curr_frame_no+1)+".json");
-    std::ofstream out_file(curr_gt_name.toStdString());
+    std::ofstream out_file((save_path + "\\" + files_list[curr_frame_no] + ".json").toStdString());
     if (out_file.is_open()) {
         Json::Value out_json;
         out_json["frame_id"] = curr_frame_no + 1;
@@ -277,12 +386,13 @@ void DataLoader::saveCurrGT(){
                 has_background = true;
                 continue;
             }
+            object["score"] = curr_gt_infos[i].score;
+            object["X"] = curr_gt_infos[i].X;
+            object["Y"] = curr_gt_infos[i].Y;
             if(curr_gt_infos[i].is_2_wheeler==false){
-                object["obj_cls"] = "vehicle";
-//                object["X"].append(curr_gt_infos[i].X);
-//                object["Y"].append(curr_gt_infos[i].Y);
-                object["X"] = curr_gt_infos[i].X;
-                object["Y"] = curr_gt_infos[i].Y;
+                object["label"] = 1.F;
+//                object["X"] = curr_gt_infos[i].X;
+//                object["Y"] = curr_gt_infos[i].Y;
                 object["dir_angle"] = curr_gt_infos[i].dir_angle;
                 Json::Value obj_coords;
                 obj_coords.append(curr_gt_infos[i].bbox.x1);
@@ -300,52 +410,45 @@ void DataLoader::saveCurrGT(){
                 object["bbox_3d"]["y"] = od_3d_coords_y;
             }
             else{
-                object["obj_cls"] = "two-wheeler";
-//                Json::Value rear_coords;
-//                if(curr_gt_infos[i].rear_x==0 && curr_gt_infos[i].rear_y==0){
-//                    rear_coords.append(-1);
-//                    rear_coords.append(-1);
-//                }
-//                else{
-//                    rear_coords.append(curr_gt_infos[i].rear_x);
-//                    rear_coords.append(curr_gt_infos[i].rear_y);
-//                }
-//                object["rear_wheel"] = rear_coords;
-//                Json::Value front_coords;
-//                if(curr_gt_infos[i].front_x==0 && curr_gt_infos[i].front_y==0){
-//                    front_coords.append(-1);
-//                    front_coords.append(-1);
-//                }
-//                else{
-//                    front_coords.append(curr_gt_infos[i].front_x);
-//                    front_coords.append(curr_gt_infos[i].front_y);
-//                }
-//                object["front_wheel"] = front_coords;
-                object["dir_angle"] = -1.F;
+                object["label"] = 3.F;
                 Json::Value obj_coords;
                 obj_coords.append(curr_gt_infos[i].bbox.x1);
                 obj_coords.append(curr_gt_infos[i].bbox.y1);
                 obj_coords.append(curr_gt_infos[i].bbox.x2);
                 obj_coords.append(curr_gt_infos[i].bbox.y2);
                 object["bbox"] = obj_coords;
-                Json::Value bbox_3d_x;
-                if(curr_gt_infos[i].rear_x==0 && curr_gt_infos[i].front_x==0){
-                    bbox_3d_x.append(-1);
-                    bbox_3d_x.append(-1);
-                }
-                else{
+
+                Json::Value bbox_3d_x, bbox_3d_y;
+                if(curr_gt_infos[i].dir_angle<0){
+                    object["dir_angle"] = -1.F;
                     bbox_3d_x.append(curr_gt_infos[i].rear_x);
                     bbox_3d_x.append(curr_gt_infos[i].front_x);
-                }
-                Json::Value bbox_3d_y;
-                if(curr_gt_infos[i].rear_y==0 && curr_gt_infos[i].front_y==0){
-                    bbox_3d_y.append(-1);
-                    bbox_3d_y.append(-1);
-                }
-                else{
                     bbox_3d_y.append(curr_gt_infos[i].rear_y);
                     bbox_3d_y.append(curr_gt_infos[i].front_y);
                 }
+                else{
+                    object["dir_angle"] = curr_gt_infos[i].dir_angle;
+                    for(int j=0; j<8; j++){
+                        bbox_3d_x.append(curr_gt_infos[i].x[j]);
+                        bbox_3d_y.append(curr_gt_infos[i].y[j]);
+                    }
+                }
+//                if(curr_gt_infos[i].rear_x==0 && curr_gt_infos[i].front_x==0){
+//                    bbox_3d_x.append(-1);
+//                    bbox_3d_x.append(-1);
+//                }
+//                else{
+//                    bbox_3d_x.append(curr_gt_infos[i].rear_x);
+//                    bbox_3d_x.append(curr_gt_infos[i].front_x);
+//                }
+//                if(curr_gt_infos[i].rear_y==0 && curr_gt_infos[i].front_y==0){
+//                    bbox_3d_y.append(-1);
+//                    bbox_3d_y.append(-1);
+//                }
+//                else{
+//                    bbox_3d_y.append(curr_gt_infos[i].rear_y);
+//                    bbox_3d_y.append(curr_gt_infos[i].front_y);
+//                }
                 object["bbox_3d"]["x"] = bbox_3d_x;
                 object["bbox_3d"]["y"] = bbox_3d_y;
             }
@@ -371,17 +474,6 @@ void DataLoader::createQImage()
         curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_BGR888);
     }
 }
-
-//void DataLoader::reverseDirAngle(){
-//    int32_t obj_size = curr_gt_infos.size();
-//    for(int32_t i=0; i<obj_size; i++){
-//        if(curr_gt_infos[i].is_chosen==true){
-//            curr_gt_infos[i].dir_angle = (curr_gt_infos[i].dir_angle+180.F)<360.F ? (curr_gt_infos[i].dir_angle+180.F) : (curr_gt_infos[i].dir_angle+180.F-360.F);
-//        }
-//    }
-
-//    emit updateGtInfos(curr_gt_infos);
-//}
 
 void DataLoader::unselectOthers(int32_t curr_idx){
     int32_t obj_size = curr_gt_infos.size();
@@ -414,17 +506,27 @@ void DataLoader::selectDraggedArea(Bbox &dragged_area){
             continue;
         }
 //        if(dragged_area.x1<=curr_gt_infos[i].bbox.x1 && curr_gt_infos[i].bbox.x2<=dragged_area.x2 && dragged_area.y1<=curr_gt_infos[i].bbox.y1 && curr_gt_infos[i].bbox.y2<=dragged_area.y2){
-        if(curr_gt_infos[i].is_2_wheeler==false && ((dragged_area.x1<=curr_gt_infos[i].bbox.x1 && curr_gt_infos[i].bbox.x1<=dragged_area.x2 \
+//        if(curr_gt_infos[i].is_2_wheeler==false && ((dragged_area.x1<=curr_gt_infos[i].bbox.x1 && curr_gt_infos[i].bbox.x1<=dragged_area.x2 \
+//            && dragged_area.y1<=curr_gt_infos[i].bbox.y1 && curr_gt_infos[i].bbox.y1<=dragged_area.y2) \
+//                || (dragged_area.x1<=curr_gt_infos[i].bbox.x2 && curr_gt_infos[i].bbox.x2<=dragged_area.x2 \
+//                    && dragged_area.y1<=curr_gt_infos[i].bbox.y2 && curr_gt_infos[i].bbox.y2<=dragged_area.y2))){
+//            curr_gt_infos[i].is_chosen = true;
+//            curr_gt_infos[i].multi_chosen = true;
+//            curr_gt_infos[i].is_first = false;
+//        }
+//        else if(curr_gt_infos[i].is_2_wheeler==true \
+//                && (dragged_area.x1<=curr_gt_infos[i].rear_x && curr_gt_infos[i].rear_x<=dragged_area.x2 \
+//                    && dragged_area.y1<=curr_gt_infos[i].rear_y && curr_gt_infos[i].rear_y<=dragged_area.y2) \
+//                && (dragged_area.x1<=curr_gt_infos[i].front_x && curr_gt_infos[i].front_x<=dragged_area.x2 \
+//                    && dragged_area.y1<=curr_gt_infos[i].front_y && curr_gt_infos[i].front_y<=dragged_area.y2)){
+//            curr_gt_infos[i].is_chosen = true;
+//            curr_gt_infos[i].multi_chosen = true;
+//            curr_gt_infos[i].is_first = false;
+//        }
+        if((dragged_area.x1<=curr_gt_infos[i].bbox.x1 && curr_gt_infos[i].bbox.x1<=dragged_area.x2 \
             && dragged_area.y1<=curr_gt_infos[i].bbox.y1 && curr_gt_infos[i].bbox.y1<=dragged_area.y2) \
                 || (dragged_area.x1<=curr_gt_infos[i].bbox.x2 && curr_gt_infos[i].bbox.x2<=dragged_area.x2 \
-                    && dragged_area.y1<=curr_gt_infos[i].bbox.y2 && curr_gt_infos[i].bbox.y2<=dragged_area.y2))){
-            curr_gt_infos[i].is_chosen = true;
-            curr_gt_infos[i].multi_chosen = true;
-            curr_gt_infos[i].is_first = false;
-        }
-        else if(curr_gt_infos[i].is_2_wheeler==true \
-                && (dragged_area.x1<=curr_gt_infos[i].rear_x &&curr_gt_infos[i].rear_x<=dragged_area.x2 && dragged_area.y1<=curr_gt_infos[i].rear_y &&curr_gt_infos[i].rear_y<=dragged_area.y2) \
-                && (dragged_area.x1<=curr_gt_infos[i].front_x &&curr_gt_infos[i].front_x<=dragged_area.x2 && dragged_area.y1<=curr_gt_infos[i].front_y &&curr_gt_infos[i].front_y<=dragged_area.y2)){
+                    && dragged_area.y1<=curr_gt_infos[i].bbox.y2 && curr_gt_infos[i].bbox.y2<=dragged_area.y2)){
             curr_gt_infos[i].is_chosen = true;
             curr_gt_infos[i].multi_chosen = true;
             curr_gt_infos[i].is_first = false;
@@ -470,7 +572,7 @@ void DataLoader::setRiderPoint(float_t x, float_t y){
     }
 
 //    curr_gt_infos.push_back(temp_rider_point);
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 
 void DataLoader::deleteGTs(){
@@ -484,13 +586,14 @@ void DataLoader::deleteGTs(){
 //        curr_gt_infos[i].multi_chosen = false;
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 
 void DataLoader::editGTs(editMode mode){
     if(mode==changeAngle){
         savePrevInfos();
     }
+    bool change_gt_mode = false;
 
     int32_t obj_size = curr_gt_infos.size();
     for(int32_t i=0; i<obj_size; i++){
@@ -499,11 +602,13 @@ void DataLoader::editGTs(editMode mode){
             curr_gt_infos[i].is_first = false;
             curr_gt_infos[i].multi_chosen = true;
         }
-        else if(mode==unchooseAll){
+        else if(mode==unchooseAll && curr_gt_infos[i].is_adding_wheel==false){
             curr_gt_infos[i].is_chosen = false;
             curr_gt_infos[i].is_first = true;
             curr_gt_infos[i].multi_chosen = false;
-            curr_gt_infos[i].is_adding_wheel = false;
+//            if(curr_gt_infos[i].is_adding_wheel==true){
+//            }
+//            curr_gt_infos[i].is_adding_wheel = false;
         }
         else if(mode==showSelectedUnchoose){
             curr_gt_infos[i].draw_enabled = false;
@@ -514,8 +619,10 @@ void DataLoader::editGTs(editMode mode){
         else if(mode==showSelectedBbox && curr_gt_infos[i].is_chosen==false){
             curr_gt_infos[i].draw_enabled = !(curr_gt_infos[i].draw_enabled);
         }
-        else if(mode==changeAngle && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==false){
-            curr_gt_infos[i].dir_angle = (curr_gt_infos[i].dir_angle+90.F)<360.F ? (curr_gt_infos[i].dir_angle+90.F) : (curr_gt_infos[i].dir_angle+90.F-360.F);
+        else if(mode==changeAngle && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].dir_angle>-0.1F){
+            float_t rotated_angle = curr_gt_infos[i].dir_angle + 90.F;
+            curr_gt_infos[i].dir_angle = rotated_angle<360.F ? rotated_angle : (rotated_angle-360.F);
+            change_gt_mode = true;
         }
         else if(mode==enableDraw){
             curr_gt_infos[i].draw_enabled = true;
@@ -525,7 +632,7 @@ void DataLoader::editGTs(editMode mode){
         }
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, change_gt_mode);
 }
 
 void DataLoader::setRearWheelPoint(float_t x, float_t y){
@@ -540,7 +647,7 @@ void DataLoader::setRearWheelPoint(float_t x, float_t y){
         }
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 
 void DataLoader::setFrontWheelPoint(float_t x, float_t y){
@@ -551,11 +658,12 @@ void DataLoader::setFrontWheelPoint(float_t x, float_t y){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_adding_wheel==true){
             curr_gt_infos[i].front_x = x;
             curr_gt_infos[i].front_y = y;
+            curr_gt_infos[i].is_adding_wheel = false;
             break;
         }
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 
 void DataLoader::deleteWheelPoint(){
@@ -572,7 +680,7 @@ void DataLoader::deleteWheelPoint(){
         }
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, true);
 }
 
 void DataLoader::setVehicleMode(){
@@ -598,7 +706,7 @@ void DataLoader::setVehicleMode(){
         curr_gt_infos.push_back(background);
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, false);
 }
 void DataLoader::setRiderMode(){
     this->is_vehicle_mode = false;
@@ -627,7 +735,7 @@ void DataLoader::setRiderMode(){
         curr_gt_infos.push_back(background);
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, false);
 }
 
 void DataLoader::zoomMode(){
@@ -647,17 +755,23 @@ void DataLoader::zoomMode(){
 //        curr_gt_infos[i].is_first = true;
     }
 
-    emit updateGtInfos(curr_gt_infos);
+    emit updateGtInfos(curr_gt_infos, false);
 }
 
-void DataLoader::showCurrRiderGTs(){
+QString DataLoader::getSelectedRiderWheelPoints(){
+    QString out_string = "";
+
     int32_t obj_size = curr_gt_infos.size();
     for(int32_t i=0; i<obj_size; i++){
-        if(curr_gt_infos[i].is_2_wheeler==true){
-            qDebug() << curr_gt_infos[i].rear_x << curr_gt_infos[i].rear_y << curr_gt_infos[i].front_x << curr_gt_infos[i].front_y;
+        if(curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].multi_chosen==false && curr_gt_infos[i].is_svnet_rider==true){
+            out_string += "Rear: (" + QString::number(curr_gt_infos[i].rear_x) + ", " + QString::number(curr_gt_infos[i].rear_y) + ") \n";
+            out_string += "Front: (" + QString::number(curr_gt_infos[i].front_x) + ", " + QString::number(curr_gt_infos[i].front_y) + ") \n";
+//            viewText->setText(out_string);
+            break;
         }
     }
-    qDebug() << "";
+
+    return out_string;
 }
 
 bool DataLoader::eventFilter(QObject* obj, QEvent* event)
