@@ -212,16 +212,7 @@ void OrientationGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     if(m_gtInfo.is_background==true && event->modifiers() != Qt::Modifier::CTRL){// && event->button()==Qt::LeftButton){
         m_gtInfo.is_not_dragging = false;
 
-////        m_gtInfo.drag_chosen_area.x2 = event->pos().x();
-////        m_gtInfo.drag_chosen_area.y2 = event->pos().y();
-//        float_t curr_x = event->pos().x();
-//        float_t curr_y = event->pos().y();
-
-////        emit m_labelmanager->dragZoomFocusedArea(m_gtInfo.drag_chosen_area);
-//        emit m_labelmanager->dragZoomFocusedArea(curr_x, curr_y);
-
-//        m_gtInfo.drag_chosen_area.x1 = (int32_t)event->pos().x();
-//        m_gtInfo.drag_chosen_area.y1 = (int32_t)event->pos().y();
+//        qDebug() << event->pos().x() << event->pos().y();
     }
 //    if (m_gtInfo.is_chosen == true) {
 //        m_gtInfo.move_resize = true;

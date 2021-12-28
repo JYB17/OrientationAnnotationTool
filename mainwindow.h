@@ -97,6 +97,8 @@ private:
     void play_video();
     void pause_video();
 
+    void fit_frame_to_canvas();
+
     Ui::MainWindow *ui;
 
     QGraphicsScene *m_scene;
@@ -108,13 +110,19 @@ private:
     int32_t prev_canvas_width;
     int32_t prev_canvas_height;
 
-    int32_t prev_frame_width;
-    int32_t prev_frame_height;
+    float_t prev_frame_width;
+    float_t prev_frame_height;
+    float_t curr_scale_ratio;
+
+    int32_t frame_width;
+    int32_t frame_height;
 
     int32_t num_frames;
 
     bool saved_flag = false;
     bool selected_checked = false;
+
+    bool is_initialized = false;
 
     GtInfo new_rider;
 

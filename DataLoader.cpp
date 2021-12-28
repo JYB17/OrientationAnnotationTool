@@ -846,6 +846,8 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
         else{
             add_rider = false;
         }
+
+//        qDebug() << mouseEvent->pos().x() << mouseEvent->pos().y();
 //        }
 //        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
 //        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
@@ -862,69 +864,6 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
         return true;
     }
     else if(event->type() == QEvent::MouseButtonRelease){
-////        QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-////        float_t curr_x = mouseEvent->pos().x();
-////        float_t curr_y = mouseEvent->pos().y();
-////        if(is_drag_mode==true){
-////            drag_end_x = curr_x;
-////            drag_end_y = curr_y;
-
-////            is_drag_mode = false;
-
-////            qDebug() << drag_start_x << drag_start_y << drag_end_x << drag_end_y;
-////            int32_t drag_min_x = std::min(drag_start_x, drag_end_x);
-////            int32_t drag_max_x = std::max(drag_start_x, drag_end_x);
-////            int32_t drag_min_y = std::min(drag_start_y, drag_end_y);
-////            int32_t drag_max_y = std::max(drag_start_y, drag_end_y);
-
-
-////            int32_t obj_size = curr_gt_infos.size();
-////            for(int32_t i=0; i<obj_size; i++){
-////                bool curr_chosen = false;
-////                for(int32_t j=0; j<8; j++){
-////                    if(drag_min_x<=curr_gt_infos[i].x[j] && curr_gt_infos[i].x[j]<=drag_max_x && drag_min_y<=curr_gt_infos[i].y[j] && curr_gt_infos[i].y[j]<=drag_max_y){
-////                        curr_chosen = true;
-////                        break;
-////                    }
-////                }
-////                if(curr_chosen==true){
-////                    curr_gt_infos[i].is_chosen = true;
-////                    curr_gt_infos[i].multi_chosen = true;
-////                }
-////            }
-
-////            emit updateGtInfos(curr_gt_infos);
-////        }
-////        else{
-////            if(is_vehicle_mode==true){
-////                if(unselect_target==true){
-////                    editGTs(unchooseAll);
-////                }
-////                unselect_target = false;
-////            }
-////            else{
-////                if(add_rider==true && (rear_enabled==true || front_enabled==true)){
-//////                    QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-//////                    float_t curr_x = mouseEvent->pos().x();
-//////                    float_t curr_y = mouseEvent->pos().y();
-////    //                GtInfo new_rider_gt;
-////    //                new_rider_gt.is_2_wheeler = true;
-////    //                new_rider_gt.vehicle_mode = false;
-////                    if(rear_enabled==true){
-////                        rear_coord_txt->setText(QString::number(curr_x)+", "+QString::number(curr_y));
-////    //                    new_rider_gt.rear_x = curr_x;
-////    //                    new_rider_gt.rear_y = curr_y;
-////                    }
-////                    else if(front_enabled==true){
-////                        front_coord_txt->setText(QString::number(curr_x)+", "+QString::number(curr_y));
-////    //                    new_rider_gt.front_x = curr_x;
-////    //                    new_rider_gt.front_y = curr_y;
-////                    }
-////                }
-////                add_rider = false;
-////            }
-////        }
-
         viewWindow->releaseMouse();
 
         return true;

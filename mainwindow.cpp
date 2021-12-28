@@ -53,6 +53,35 @@ MainWindow::MainWindow(QWidget *parent)
     ui->edit_frame_no->setMinimumWidth(90);
     ui->edit_frame_no->setMaximumWidth(91);
 
+    QAction *del_action = new QAction(this);
+    QList<QKeySequence> del_shortcuts {QKeySequence(Qt::Key_D), QKeySequence(Qt::Key_Delete)};
+    del_action->setShortcuts(del_shortcuts);
+    this->addAction(del_action);
+    auto del_button = ui->btn_delete;
+    connect(del_action, &QAction::triggered, [del_button](){ del_button->animateClick(); });
+
+    QAction *forward_action = new QAction(this);
+    QList<QKeySequence> forward_shortcuts {QKeySequence(Qt::Key_R), QKeySequence(Qt::Key_Down)};
+    forward_action->setShortcuts(forward_shortcuts);
+    this->addAction(forward_action);
+    auto forward_button = ui->btn_forward;
+    connect(forward_action, &QAction::triggered, [forward_button](){ forward_button->animateClick(); });
+
+    QAction *backward_action = new QAction(this);
+    QList<QKeySequence> backward_shortcuts {QKeySequence(Qt::Key_W), QKeySequence(Qt::Key_Up)};
+    backward_action->setShortcuts(backward_shortcuts);
+    this->addAction(backward_action);
+    auto backward_button = ui->btn_backward;
+    connect(backward_action, &QAction::triggered, [backward_button](){ backward_button->animateClick(); });
+
+//    QAction *zoom_fit_action = new QAction(this);
+//    QList<QMouseEvent> zoom_fit_shortcuts {QMouseEvent(Qt::MiddleButton)};//, QKeySequence(Qt::MiddleButton)};
+//    zoom_fit_action->setShortcuts(zoom_fit_shortcuts);
+//    this->addAction(zoom_fit_action);
+//    auto zoom_fit_button = ui->btn_zoom_fit;
+//    connect(zoom_fit_action, &QAction::triggered, [zoom_fit_button](){ zoom_fit_button->animateClick(); });
+
+
 #ifdef _DEBUG
     ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
     ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
@@ -173,8 +202,9 @@ void MainWindow::on_btn_load_gts_imgs_clicked()
 {
     if(ui->edit_gt_path->text()!="" && ui->edit_img_path->text()!="" && ui->edit_save_path->text()!=""){
         m_dataloader->setGTPath(ui->edit_gt_path->text());
-        m_dataloader->setImgPath(ui->edit_img_path->text());
         m_dataloader->setSavePath(ui->edit_save_path->text());
+        m_dataloader->setImgPath(ui->edit_img_path->text());
+        is_initialized = true;
     }
 }
 
@@ -203,30 +233,67 @@ void MainWindow::SetNewVideo(int32_t img_width, int32_t img_height)
     ui->radio_normal->setEnabled(true);
     ui->radio_rider->setEnabled(true);
     ui->radio_zoom->setEnabled(true);
+    ui->btn_zoom_fit->setEnabled(true);
 //    ui->btn_add_rider->setEnabled(true);
-//    ui->btn_zoom_fit->setEnabled(true);
 
-    if(prev_frame_width!=img_width || prev_frame_height!= img_height) {
-        qreal min_wh = std::min((ui->canvas->width()) / qreal(img_width + 4), (ui->canvas->height()) / qreal(img_height + 4));
-        ui->canvas->scale(min_wh, min_wh);
+//    if(prev_frame_width!=img_width || prev_frame_height!= img_height) {
+//        qreal min_wh = std::min((ui->canvas->width()) / qreal(img_width + 4), (ui->canvas->height()) / qreal(img_height + 4));
+//        ui->canvas->scale(min_wh, min_wh);
+//    }
+
+//    if ((ui->canvas->width()) / qreal(img_width + 4) < (ui->canvas->height()) / qreal(img_height + 4)) {
+//        prev_canvas_width = ui->canvas->width() - 4;
+//        prev_canvas_height = int32_t(img_height * (prev_canvas_width / (float_t)img_width));
+//    }
+//    else {
+//        prev_canvas_height = ui->canvas->height() - 4;
+//        prev_canvas_width = int32_t(img_width * (prev_canvas_height / (float_t)img_height));
+//    }
+
+    if(is_initialized==false){
+        prev_frame_width = (float_t)img_width;
+        prev_frame_height = (float_t)img_height;
+//        curr_scale_ratio = 1.F;
     }
 
-    if ((ui->canvas->width()) / qreal(img_width + 4) < (ui->canvas->height()) / qreal(img_height + 4)) {
-        prev_canvas_width = ui->canvas->width() - 4;
-        prev_canvas_height = int32_t(img_height * (prev_canvas_width / (float_t)img_width));
-    }
-    else {
-        prev_canvas_height = ui->canvas->height() - 4;
-        prev_canvas_width = int32_t(img_width * (prev_canvas_height / (float_t)img_height));
-    }
-
-    prev_frame_width = img_width;
-    prev_frame_height = img_height;
+    frame_width = img_width;
+    frame_height = img_height;
 
     num_frames = m_dataloader->getNumFrames();
     ui->video_navigator->setMinimum(0);
     ui->video_navigator->setMaximum(num_frames-1);
     ui->video_navigator->setValue(0);
+
+    fit_frame_to_canvas();
+}
+
+void MainWindow::fit_frame_to_canvas()
+{
+    int32_t canvas_w = ui->canvas->width();
+    int32_t canvas_h = ui->canvas->height();
+
+//    bool is_canvas_size_changed = false;
+//    if(prev_canvas_width!=canvas_w || prev_canvas_height!=canvas_h){
+//        is_canvas_size_changed = true;
+//    }
+
+    float_t min_ratio = std::min(((float_t)(canvas_w-8)/(prev_frame_width)), ((float_t)(canvas_h-8)/(prev_frame_height)));
+    ui->canvas->scale(min_ratio, min_ratio);
+    prev_frame_width *= min_ratio;
+    prev_frame_height *= min_ratio;
+
+//    if(curr_scale_ratio==1.F){// || is_canvas_size_changed==true){
+//        float_t min_ratio = std::min(((float_t)(canvas_w-8)/(prev_frame_width)), ((float_t)(canvas_h-8)/(prev_frame_height)));
+//        ui->canvas->scale(min_ratio, min_ratio);
+//        prev_frame_width *= min_ratio;
+//        prev_frame_height *= min_ratio;
+////        prev_canvas_width = canvas_w;
+////        prev_canvas_height = canvas_h;
+//    }
+//    else{
+//        ui->canvas->scale(1.F/curr_scale_ratio, 1.F/curr_scale_ratio);
+//        curr_scale_ratio = 1.F+1e-8;
+//    }
 }
 
 void MainWindow::on_btn_forward_clicked()
@@ -270,6 +337,7 @@ void MainWindow::play_video(){
     ui->btn_redo->setEnabled(false);
     ui->btn_add_rider->setEnabled(false);
     ui->btn_init_save->setEnabled(false);
+    ui->btn_zoom_fit->setEnabled(false);
 //    ui->btn_zoom_fit->setEnabled(false);
 }
 
@@ -288,6 +356,7 @@ void MainWindow::pause_video(){
     ui->btn_undo->setEnabled(true);
     ui->btn_redo->setEnabled(true);
     ui->btn_init_save->setEnabled(true);
+    ui->btn_zoom_fit->setEnabled(true);
     if(ui->radio_rider->isChecked()==true){
         ui->btn_add_rider->setEnabled(true);
     }
@@ -314,39 +383,39 @@ void MainWindow::on_btn_save_clicked()
 
 void MainWindow::wheelEvent(QWheelEvent* event)
 {
-    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
-        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        if (event->angleDelta().y() > 0) {
-            ui->canvas->scale(1.1, 1.1);
-            prev_canvas_width = int(prev_canvas_width * 1.1);
-            prev_canvas_height = int(prev_canvas_height * 1.1);
-        }
-        else {
-            ui->canvas->scale(1.F/1.1F, 1.F/1.1F);
-            prev_canvas_width = int(prev_canvas_width * 1.F/1.1F);
-            prev_canvas_height = int(prev_canvas_height * 1.F/1.1F);
-        }
-        event->accept();
-
-//        qDebug() << prev_canvas_width << prev_canvas_height;
+//    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
+//        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+//        if (event->angleDelta().y() > 0) {
+//            ui->canvas->scale(1.1, 1.1);
+//            prev_canvas_width = int(prev_canvas_width * 1.1);
+//            prev_canvas_height = int(prev_canvas_height * 1.1);
+//        }
+//        else {
+//            ui->canvas->scale(1.F/1.1F, 1.F/1.1F);
+//            prev_canvas_width = int(prev_canvas_width * 1.F/1.1F);
+//            prev_canvas_height = int(prev_canvas_height * 1.F/1.1F);
+//        }
+//        event->accept();
+//    }
+    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+    float_t scale_ratio = 1.F;
+    if (event->angleDelta().y() > 0) {
+        scale_ratio = 1.1F;
     }
-//    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-//    if (event->angleDelta().y() > 0) {
-//        ui->canvas->scale(1.1, 1.1);
-//        prev_canvas_width = int(prev_canvas_width * 1.1);
-//        prev_canvas_height = int(prev_canvas_height * 1.1);
-//    }
-//    else {
-//        ui->canvas->scale(0.9, 0.9);
-//        prev_canvas_width = int(prev_canvas_width * 0.9);
-//        prev_canvas_height = int(prev_canvas_height * 0.9);
-//    }
+    else {
+        scale_ratio = 1.F/1.1F;
+    }
 
-//    event->accept();
+    ui->canvas->scale(scale_ratio, scale_ratio);
+    prev_frame_width = prev_frame_width * scale_ratio;
+    prev_frame_height = prev_frame_height * scale_ratio;
+
+    event->accept();
 }
 
 void MainWindow::on_btn_zoom_fit_clicked()
 {
+    fit_frame_to_canvas();
 //    qreal min_wh = std::min((ui->canvas->width()) / qreal(prev_canvas_width + 4), (ui->canvas->height()) / qreal(prev_canvas_height + 4));
 //    ui->canvas->scale(min_wh, min_wh);
 
@@ -586,21 +655,23 @@ void MainWindow::on_check_show_orig_clicked()
 {
     m_dataloader->setNewGtMode(!(ui->check_show_orig->isChecked()));
 
-    if(ui->radio_normal->isChecked()==true){
-        m_dataloader->setVehicleMode();
-    }
-    else if(ui->radio_rider->isChecked()==true){
-        m_dataloader->setRiderMode();
-    }
-    else{   // ui->radio_zoom->isChecked()==true
-        m_dataloader->zoomMode();
-    }
-
-    if(ui->check_show_orig->isChecked()==true){
-        if(m_dataloader->checkOrigGtLoaded()==false){
-            m_dataloader->readJson();
+    if(is_initialized==true){
+        if(ui->radio_normal->isChecked()==true){
+            m_dataloader->setVehicleMode();
         }
-        m_dataloader->reInitGtInfos(ui->radio_normal->isChecked(), ui->radio_zoom->isChecked());
+        else if(ui->radio_rider->isChecked()==true){
+            m_dataloader->setRiderMode();
+        }
+        else{   // ui->radio_zoom->isChecked()==true
+            m_dataloader->zoomMode();
+        }
+
+        if(ui->check_show_orig->isChecked()==true){
+            if(m_dataloader->checkOrigGtLoaded()==false){
+                m_dataloader->readJson();
+            }
+            m_dataloader->reInitGtInfos(ui->radio_normal->isChecked(), ui->radio_zoom->isChecked());
+        }
     }
 }
 
