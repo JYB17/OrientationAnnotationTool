@@ -383,34 +383,36 @@ void MainWindow::on_btn_save_clicked()
 
 void MainWindow::wheelEvent(QWheelEvent* event)
 {
-//    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
-//        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-//        if (event->angleDelta().y() > 0) {
-//            ui->canvas->scale(1.1, 1.1);
-//            prev_canvas_width = int(prev_canvas_width * 1.1);
-//            prev_canvas_height = int(prev_canvas_height * 1.1);
-//        }
-//        else {
-//            ui->canvas->scale(1.F/1.1F, 1.F/1.1F);
-//            prev_canvas_width = int(prev_canvas_width * 1.F/1.1F);
-//            prev_canvas_height = int(prev_canvas_height * 1.F/1.1F);
-//        }
-//        event->accept();
+    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
+        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        float_t scale_ratio = 1.F;
+        if (event->angleDelta().y() > 0) {
+            scale_ratio = 1.1F;
+        }
+        else {
+            scale_ratio = 1.F/1.1F;
+        }
+
+        ui->canvas->scale(scale_ratio, scale_ratio);
+        prev_frame_width = prev_frame_width * scale_ratio;
+        prev_frame_height = prev_frame_height * scale_ratio;
+
+        event->accept();
+    }
+//    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+//    float_t scale_ratio = 1.F;
+//    if (event->angleDelta().y() > 0) {
+//        scale_ratio = 1.1F;
 //    }
-    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-    float_t scale_ratio = 1.F;
-    if (event->angleDelta().y() > 0) {
-        scale_ratio = 1.1F;
-    }
-    else {
-        scale_ratio = 1.F/1.1F;
-    }
+//    else {
+//        scale_ratio = 1.F/1.1F;
+//    }
 
-    ui->canvas->scale(scale_ratio, scale_ratio);
-    prev_frame_width = prev_frame_width * scale_ratio;
-    prev_frame_height = prev_frame_height * scale_ratio;
+//    ui->canvas->scale(scale_ratio, scale_ratio);
+//    prev_frame_width = prev_frame_width * scale_ratio;
+//    prev_frame_height = prev_frame_height * scale_ratio;
 
-    event->accept();
+//    event->accept();
 }
 
 void MainWindow::on_btn_zoom_fit_clicked()

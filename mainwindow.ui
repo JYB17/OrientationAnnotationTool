@@ -916,10 +916,10 @@ GTs and Images</string>
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>Enter (~)</string>
+             <string>Enter (s)</string>
             </property>
             <property name="shortcut">
-             <string>`</string>
+             <string>S</string>
             </property>
            </widget>
           </item>
@@ -950,10 +950,10 @@ GTs and Images</string>
              <bool>false</bool>
             </property>
             <property name="text">
-             <string>Enter (~)</string>
+             <string>Enter (s)</string>
             </property>
             <property name="shortcut">
-             <string>`</string>
+             <string>S</string>
             </property>
            </widget>
           </item>
