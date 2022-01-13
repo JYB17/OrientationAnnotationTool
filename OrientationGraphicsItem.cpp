@@ -76,7 +76,7 @@ void OrientationGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphic
         painter->drawLine(m_gtInfo.x[2], m_gtInfo.y[2], m_gtInfo.x[6], m_gtInfo.y[6]);
         painter->drawLine(m_gtInfo.x[3], m_gtInfo.y[3], m_gtInfo.x[7], m_gtInfo.y[7]);
 
-        pen.setColor(Qt::cyan);
+        pen.setColor(Qt::red);
         painter->setPen(pen);
         painter->drawText(x_center, y_center, QString::number(m_gtInfo.dir_angle));
         float_t draw_angle = calculateAngleInImage(m_gtInfo.dir_angle);
