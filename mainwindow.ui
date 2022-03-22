@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>1644</width>
-    <height>773</height>
+    <width>1980</width>
+    <height>840</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -21,10 +21,108 @@
        <layout class="QVBoxLayout" name="verticalLayout_3">
         <item>
          <layout class="QGridLayout" name="gridLayout_2">
+          <item row="1" column="0">
+           <layout class="QVBoxLayout" name="verticalLayout_9">
+            <property name="sizeConstraint">
+             <enum>QLayout::SetNoConstraint</enum>
+            </property>
+            <item>
+             <widget class="QLabel" name="lbl_gt_path">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>GT path</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lbl_img_path">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Image/Video path</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLabel" name="lbl_save_path">
+              <property name="font">
+               <font>
+                <weight>75</weight>
+                <bold>true</bold>
+               </font>
+              </property>
+              <property name="text">
+               <string>Save path</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+          <item row="1" column="4">
+           <widget class="QPushButton" name="btn_load_gts_imgs">
+            <property name="font">
+             <font>
+              <pointsize>12</pointsize>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>Load</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="2">
+           <layout class="QVBoxLayout" name="FolderSelection_Vlayout">
+            <item>
+             <widget class="QPushButton" name="Btn_SelGTPath">
+              <property name="text">
+               <string>Select GT Path</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="Btn_SelImagePath">
+              <property name="text">
+               <string>Select Images Path</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="Btn_SelVideo">
+              <property name="text">
+               <string>Select Video</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="Btn_SelOutputPath">
+              <property name="text">
+               <string>Select Save Path</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
           <item row="1" column="1">
            <layout class="QVBoxLayout" name="verticalLayout_8">
             <item>
              <widget class="QLineEdit" name="edit_gt_path">
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Expanding" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -48,6 +146,9 @@
             </item>
             <item>
              <widget class="QLineEdit" name="edit_img_path">
+              <property name="enabled">
+               <bool>true</bool>
+              </property>
               <property name="font">
                <font>
                 <pointsize>10</pointsize>
@@ -57,64 +158,6 @@
             </item>
             <item>
              <widget class="QLineEdit" name="edit_save_path"/>
-            </item>
-           </layout>
-          </item>
-          <item row="1" column="2">
-           <widget class="QPushButton" name="btn_load_gts_imgs">
-            <property name="font">
-             <font>
-              <pointsize>12</pointsize>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Load
-GTs and Images</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <layout class="QVBoxLayout" name="verticalLayout_9">
-            <item>
-             <widget class="QLabel" name="lbl_gt_path">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>GT path</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lbl_img_path">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Image path</string>
-              </property>
-             </widget>
-            </item>
-            <item>
-             <widget class="QLabel" name="lbl_save_path">
-              <property name="font">
-               <font>
-                <weight>75</weight>
-                <bold>true</bold>
-               </font>
-              </property>
-              <property name="text">
-               <string>Save path</string>
-              </property>
-             </widget>
             </item>
            </layout>
           </item>
@@ -714,7 +757,14 @@ GTs and Images</string>
          </widget>
         </item>
         <item>
-         <widget class="QLabel" name="lbl_empty_top">
+         <widget class="QLabel" name="ViewPortPosText">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="ScenePos">
           <property name="text">
            <string/>
           </property>
@@ -849,13 +899,6 @@ GTs and Images</string>
             <string>pedestrian</string>
            </property>
           </item>
-         </widget>
-        </item>
-        <item>
-         <widget class="QLabel" name="lbl_empty_0">
-          <property name="text">
-           <string/>
-          </property>
          </widget>
         </item>
         <item>
@@ -1023,8 +1066,8 @@ GTs and Images</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>1644</width>
-     <height>21</height>
+     <width>1980</width>
+     <height>26</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

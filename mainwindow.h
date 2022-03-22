@@ -9,6 +9,9 @@
 #include "FrontView.h"
 #include "LabelManager.h"
 #include "QFileDialog"
+#include "QPushButton"
+#include "QFileDialog"
+#include "QString"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -92,6 +95,14 @@ private slots:
 
     void on_btn_move_frame_clicked();
 
+    void on_Btn_SelGTPath_clicked();
+
+    void on_Btn_SelOutputPath_clicked();
+
+    void on_Btn_SelVideo_clicked();
+
+    void on_Btn_SelImagePath_clicked();
+
 private:
     void changeFrame(int32_t frame_no);
     void play_video();
@@ -110,9 +121,9 @@ private:
     int32_t prev_canvas_width;
     int32_t prev_canvas_height;
 
-    float_t prev_frame_width;
-    float_t prev_frame_height;
-    float_t curr_scale_ratio;
+    float prev_frame_width;
+    float prev_frame_height;
+    float curr_scale_ratio;
 
     int32_t frame_width;
     int32_t frame_height;
@@ -129,6 +140,11 @@ private:
 //    DrawInfo draw_info;
 
 protected:
-    virtual void wheelEvent(QWheelEvent* event) override;
+//    virtual void wheelEvent(QWheelEvent* event) override;
+
+private:
+
+
+    QString gt_root_, video_path_, image_root_, output_root_;
 };
 #endif // MAINWINDOW_H

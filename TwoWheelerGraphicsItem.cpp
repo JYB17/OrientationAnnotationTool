@@ -1,10 +1,11 @@
 #include "TwoWheelerGraphicsItem.h"
+#include <cmath>
 
 TwoWheelerGraphicsItem::TwoWheelerGraphicsItem(LabelManager* label_manager, GtInfo& gt_info, int zValue):
     m_gtInfo(gt_info)
 {
-    float_t rect_w = gt_info.bbox.x2 - gt_info.bbox.x1;
-    float_t rect_h = gt_info.bbox.y2 - gt_info.bbox.y1;
+    float rect_w = gt_info.bbox.x2 - gt_info.bbox.x1;
+    float rect_h = gt_info.bbox.y2 - gt_info.bbox.y1;
 
 //    m_rect.setX(m_gtInfo.bbox.x1-0.5F*rect_w);
 //    m_rect.setY(m_gtInfo.bbox.y1);
@@ -40,8 +41,8 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
         QPen pen = painter->pen();
         painter->setPen(pen);
 
-        float_t rect_w = m_gtInfo.bbox.x2 - m_gtInfo.bbox.x1;
-        float_t rect_h = m_gtInfo.bbox.y2 - m_gtInfo.bbox.y1;
+        float rect_w = m_gtInfo.bbox.x2 - m_gtInfo.bbox.x1;
+        float rect_h = m_gtInfo.bbox.y2 - m_gtInfo.bbox.y1;
 
         if(m_gtInfo.is_chosen==true){
 //            box_color = Qt::magenta;
@@ -129,9 +130,9 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
             pen.setColor(Qt::magenta);
             painter->setPen(pen);
             painter->drawText(x_center, y_center, QString::number(m_gtInfo.dir_angle));
-            float_t draw_angle = calculateAngleInImage(m_gtInfo.dir_angle);
-            float_t x_end = x_center+50.F*cos(draw_angle);
-            float_t y_end = y_center+50.F*sin(draw_angle);
+            float draw_angle = calculateAngleInImage(m_gtInfo.dir_angle);
+            float x_end = x_center+50.F*std::cos(draw_angle);
+            float y_end = y_center+50.F*std::sin(draw_angle);
             painter->drawLine(x_center, y_center, x_end, y_end);
             painter->drawLine(x_end, y_end, x_center+45.F*cos(calculateAngleInImage(m_gtInfo.dir_angle-10.F)), y_center+45.F*sin(calculateAngleInImage(m_gtInfo.dir_angle-10.F)));
             painter->drawLine(x_end, y_end, x_center+45.F*cos(calculateAngleInImage(m_gtInfo.dir_angle+10.F)), y_center+45.F*sin(calculateAngleInImage(m_gtInfo.dir_angle+10.F)));
@@ -240,8 +241,8 @@ void TwoWheelerGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 
 ////        m_gtInfo.drag_chosen_area.x2 = event->pos().x();
 ////        m_gtInfo.drag_chosen_area.y2 = event->pos().y();
-//        float_t curr_x = event->pos().x();
-//        float_t curr_y = event->pos().y();
+//        float curr_x = event->pos().x();
+//        float curr_y = event->pos().y();
 
 ////        emit m_labelmanager->dragZoomFocusedArea(m_gtInfo.drag_chosen_area);
 //        emit m_labelmanager->dragZoomFocusedArea(curr_x, curr_y);
@@ -307,8 +308,8 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
         else if(event->button() == Qt::LeftButton){
             m_gtInfo.is_not_dragging = true;
 
-//            float_t move_start_x = event->pos().x();
-//            float_t move_start_y = event->pos().y();
+//            float move_start_x = event->pos().x();
+//            float move_start_y = event->pos().y();
 
 //            emit m_labelmanager->setStartXY(move_start_x, move_start_y);
 

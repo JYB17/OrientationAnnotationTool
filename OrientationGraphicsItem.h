@@ -41,8 +41,8 @@ private:
     eResizeDirection m_itemController;
     LabelManager* m_labelmanager;// = nullptr;
 
-    float_t x_center;
-    float_t y_center;
+    float x_center;
+    float y_center;
 
     void ResizeTop(QPointF mouse_pos);
     void ResizeLeft(QPointF mouse_pos);
@@ -53,7 +53,7 @@ private:
 
     bool multiple_chosen;
 
-    float_t calculateAngleInImage(float_t orig_angle){
+    float calculateAngleInImage(float orig_angle){
         return 360.F*DEG2RAD - (orig_angle*DEG2RAD + 90.F*DEG2RAD);
     }
 

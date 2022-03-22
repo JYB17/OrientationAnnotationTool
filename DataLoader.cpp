@@ -1,6 +1,14 @@
 #include "DataLoader.h"
+#include "QMouseEvent"
+#include "QApplication"
+#include "qmath.h"
+#include "QScrollBar"
 
-DataLoader::DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *rear_coord_txt, QLabel *front_coord_txt, QObject* parent) : QObject(parent)//,
+DataLoader::DataLoader(\
+        QGraphicsView* mainWindow, \
+        QLabel* LoadTypeText, QLabel *rear_coord_txt, QLabel *front_coord_txt, QLabel* scene_pos_txt, QLabel* viewport_pos_txt,
+                       QObject* parent)
+    : QObject(parent)//,
 //    ptr_draw_info{nullptr}
 {
     num_frames = 0;
@@ -24,7 +32,14 @@ DataLoader::DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *
     rear_enabled = false;
     front_enabled = false;
 
-    this->viewWindow->installEventFilter(this);
+    //this->viewWindow->installEventFilter(this);
+    this->viewWindow->setMouseTracking(true);
+    viewWindow->viewport()->installEventFilter(this);
+
+    /*-----Youngjae.Lee-----*/
+    zoom_factor_ = 1.0015F;
+    this->viewport_pos_txt_ = viewport_pos_txt;
+    this->scene_pos_txt_ = scene_pos_txt;
 }
 
 DataLoader::~DataLoader()
@@ -73,7 +88,15 @@ void DataLoader::setImgPath(QString const img_path)
     this->img_path = img_path;
     curr_frame_no = 0;
 
-    showFrame();
+    if(this->img_path.endsWith("avi") == true){
+        vc_ = new cv::VideoCapture(this->img_path.toStdString());
+        if(vc_->isOpened() != true){
+            printf("??");
+            delete vc_;
+            vc_ = nullptr;
+        }
+    }
+        showFrame();
 //    viewText->setText("Successfully loaded " + QString::number(num_frames) + " GT files and frame images!");
 }
 
@@ -82,18 +105,24 @@ void DataLoader::setSavePath(QString const save_path){
 }
 
 void DataLoader::showFrame(){
-    curr_img_name = img_path + "\\" + files_list[curr_frame_no] + ".png";
-//    curr_gt_name = gt_path + "\\" + files_list[curr_frame_no] + ".json";
-    prev_done_gts.clear();
-    undo_flag = false;
-    undo_redo_idx = -1;
+    if(vc_ == nullptr){
+        curr_img_name = img_path + "\\" + files_list[curr_frame_no] + ".png";
+    //    curr_gt_name = gt_path + "\\" + files_list[curr_frame_no] + ".json";
+        prev_done_gts.clear();
+        undo_flag = false;
+        undo_redo_idx = -1;
+        curr_frame = cv::imread(curr_img_name.toStdString());
+    }
+    else{
+        curr_frame_no = static_cast<int32_t>(vc_->get(cv::CAP_PROP_POS_FRAMES));
+        (*vc_) >> curr_frame;
+        cv::cvtColor(curr_frame, curr_frame, cv::COLOR_RGB2BGR);
+    }
 
-    curr_frame = cv::imread(curr_img_name.toStdString());
     if(initialized==false){
         frame_width = curr_frame.cols;
         frame_height = curr_frame.rows;
         emit SetNewVideo(frame_width, frame_height);
-
         initialized = true;
     }
 
@@ -462,16 +491,14 @@ void DataLoader::saveCurrGT(){
 
 void DataLoader::createQImage()
 {
-//    cv::putText(curr_frame, std::to_string(curr_frame_no + 1) + "/" + std::to_string(num_frames), cv::Point(20, 40), 2, 1, cv::Scalar(0, 0, 0), 3);
     cv::putText(curr_frame, std::to_string(curr_frame_no + 1) + "/" + std::to_string(num_frames), cv::Point(20, 40), 2, 1, cv::Scalar(), 3);
     cv::putText(curr_frame, std::to_string(curr_frame_no + 1) + "/" + std::to_string(num_frames), cv::Point(20, 40), 2, 1, cv::Scalar(255, 255, 255), 1);
-//    cv::putText(curr_frame, std::to_string(curr_frame_no + 1) + "/" + std::to_string(num_frames) + " (" + curr_gt_name.toStdString() + ")", cv::Point(20, 40), 2, 1, cv::Scalar(255, 255, 255), 2);
     if (curr_img == nullptr) {
-        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_BGR888);
+        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_RGB888);
     }
     else {// if (curr_img ->width() != curr_frame.cols || curr_img ->height() != curr_frame.rows) {
         delete curr_img;
-        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_BGR888);
+        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_RGB888);
     }
 }
 
@@ -534,7 +561,7 @@ void DataLoader::selectDraggedArea(Bbox &dragged_area){
     }
 }
 
-//void DataLoader::dragZoomFocusedArea(float_t x, float_t y){
+//void DataLoader::dragZoomFocusedArea(float x, float y){
 //    // TODO: implement this function
 //    int32_t curr_hor = viewWindow->horizontalScrollBar()->value() - ((int)x - move_start_x);
 //    int32_t curr_ver = viewWindow->verticalScrollBar()->value() - ((int)y - move_start_y);
@@ -550,12 +577,12 @@ void DataLoader::selectDraggedArea(Bbox &dragged_area){
 ////    qDebug() << "Y" << dragged_area.y1 << "-->" << dragged_area.y2 << "\n";
 //}
 
-//void DataLoader::setStartXY(float_t x, float_t y){
+//void DataLoader::setStartXY(float x, float y){
 //    move_start_x = x;
 //    move_start_y = y;
 //}
 
-void DataLoader::setRiderPoint(float_t x, float_t y){
+void DataLoader::setRiderPoint(float x, float y){
     GtInfo temp_rider_point;
     temp_rider_point.is_valid = false;
     temp_rider_point.is_2_wheeler = true;
@@ -620,7 +647,7 @@ void DataLoader::editGTs(editMode mode){
             curr_gt_infos[i].draw_enabled = !(curr_gt_infos[i].draw_enabled);
         }
         else if(mode==changeAngle && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].dir_angle>-0.1F){
-            float_t rotated_angle = curr_gt_infos[i].dir_angle + 90.F;
+            float rotated_angle = curr_gt_infos[i].dir_angle + 90.F;
             curr_gt_infos[i].dir_angle = rotated_angle<360.F ? rotated_angle : (rotated_angle-360.F);
             change_gt_mode = true;
         }
@@ -635,7 +662,7 @@ void DataLoader::editGTs(editMode mode){
     emit updateGtInfos(curr_gt_infos, change_gt_mode);
 }
 
-void DataLoader::setRearWheelPoint(float_t x, float_t y){
+void DataLoader::setRearWheelPoint(float x, float y){
     savePrevInfos();
 
     int32_t obj_size = curr_gt_infos.size();
@@ -650,7 +677,7 @@ void DataLoader::setRearWheelPoint(float_t x, float_t y){
     emit updateGtInfos(curr_gt_infos, true);
 }
 
-void DataLoader::setFrontWheelPoint(float_t x, float_t y){
+void DataLoader::setFrontWheelPoint(float x, float y){
     savePrevInfos();
 
     int32_t obj_size = curr_gt_infos.size();
@@ -824,7 +851,7 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
 //        else{
 //            add_rider = true;
 //        }
-
+        viewWindow->releaseMouse();
         return true;
     }
     else if(event->type() == QEvent::MouseMove){
@@ -835,8 +862,8 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
 //            is_drag_mode = true;
 //        }
 //        else{
-        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
-        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
+//        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
+//        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
         move_start_x = curr_x;
         move_start_y = curr_y;
 
@@ -846,6 +873,15 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
         else{
             add_rider = false;
         }
+
+        QPointF delta = target_viewport_pos_ - mouseEvent->pos();
+        if(qAbs(delta.x()) > 5 || qAbs(delta.y()) > 5){
+            target_viewport_pos_ = mouseEvent->pos();
+            target_scene_pos_ = viewWindow->mapToScene(mouseEvent->pos());
+        }
+        this->viewport_pos_txt_->setText("ViewPort Pos: " + (QString::number(target_viewport_pos_.x()) + "," + QString::number(target_viewport_pos_.y())));
+        this->scene_pos_txt_->setText("Scene Pos: " + (QString::number(target_scene_pos_.x()) + "," + QString::number(target_scene_pos_.y())));
+
 
 //        qDebug() << mouseEvent->pos().x() << mouseEvent->pos().y();
 //        }
@@ -863,16 +899,40 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
 
         return true;
     }
-    else if(event->type() == QEvent::MouseButtonRelease){
-        viewWindow->releaseMouse();
+//    else if(event->type() == QEvent::MouseButtonRelease){
+//        viewWindow->releaseMouse();
 
-        return true;
+//        return true;
+//    }
+    else if(event->type() == QEvent::Wheel){
+        QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
+        if(wheel_event->modifiers() == Qt::KeyboardModifier::ControlModifier){
+            if(wheel_event->orientation() == Qt::Vertical){
+                //viewWindow->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+                double angle = wheel_event->angleDelta().y();
+                float factor = qPow(zoom_factor_, angle);
+                Zoom(factor);
+                return true;
+            }
+        }
     }
     else{
         return false;
     }
+    Q_UNUSED(obj);
+    return false;
 }
 
+
+void DataLoader::Zoom(double factor){
+    viewWindow->scale(factor, factor);
+    viewWindow->centerOn(target_scene_pos_);
+    QPointF delta_viewport_pos = target_viewport_pos_ - QPointF(viewWindow->viewport()->width() / 2.0,
+                                                               viewWindow->viewport()->height() / 2.0);
+    QPointF viewport_center = viewWindow->mapFromScene(target_scene_pos_) - delta_viewport_pos;
+    viewWindow->centerOn(viewWindow->mapToScene(viewport_center.toPoint()));
+    emit zoomed();
+}
 
 
 

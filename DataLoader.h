@@ -34,7 +34,9 @@ class DataLoader : public QObject
     Q_OBJECT
 
 public:
-    explicit DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *rear_coord_txt, QLabel *front_coord_txt, QObject* parent = nullptr);
+    explicit DataLoader(QGraphicsView* mainWindow, \
+                        QLabel* LoadTypeText, QLabel *rear_coord_txt, QLabel *front_coord_txt, QLabel* scene_pos_txt, QLabel* viewport_post_txt,
+                        QObject* parent=nullptr);
     ~DataLoader();
 
     enum editMode {
@@ -55,8 +57,8 @@ public:
     void setImgPath(QString const img_path);
     void setSavePath(QString const save_path);
 
-    void setRearWheelPoint(float_t x, float_t y);
-    void setFrontWheelPoint(float_t x, float_t y);
+    void setRearWheelPoint(float x, float y);
+    void setFrontWheelPoint(float x, float y);
     void deleteWheelPoint();
 
     bool checkOrigGtLoaded(){
@@ -176,12 +178,24 @@ private:
 
     bool start_w_orig_gt = true;
 
+    /*-----Youngjae.Lee-----*/
+    cv::VideoCapture* vc_;
+    QPointF target_scene_pos_;
+    QPointF target_viewport_pos_;
+    float zoom_factor_;
+
+    QLabel* scene_pos_txt_;
+    QLabel* viewport_pos_txt_;
+
+    void Zoom(double factor);
+
 //    DrawInfo const* ptr_draw_info;
 
 signals:
     void UpdateFrontImage(QImage* img);
     void SetNewVideo(int32_t img_width, int32_t img_height);
     void updateGtInfos(QVector<GtInfo> &gts_info, bool change_gt_mode);
+    void zoomed();
 //    void updateGtInfos(QVector<GtInfo> &gts_info);
 
 protected:
@@ -191,9 +205,9 @@ private slots:
     void unselectOthers(int32_t curr_idx);
     void setMultiChosen();
     void selectDraggedArea(Bbox &dragged_area);
-    void setRiderPoint(float_t x, float_t y);
-//    void dragZoomFocusedArea(float_t x, float_t y);
-//    void setStartXY(float_t x, float_t y);
+    void setRiderPoint(float x, float y);
+//    void dragZoomFocusedArea(float x, float y);
+//    void setStartXY(float x, float y);
 
 };
 

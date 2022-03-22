@@ -1,15 +1,15 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 
+
 MainWindow::MainWindow(QWidget *parent)
-    : QMainWindow(parent)
-    , ui(new Ui::MainWindow)//, draw_info{1.0F}
+    : QMainWindow(parent), ui(new Ui::MainWindow)//, draw_info{1.0F}
 {
     ui->setupUi(this);
 
 
     m_scene = new QGraphicsScene();
-    m_dataloader = new DataLoader(ui->canvas, ui->LoadTypeText, ui->lbl_rear_txt, ui->lbl_front_txt);
+    m_dataloader = new DataLoader(ui->canvas, ui->LoadTypeText, ui->lbl_rear_txt, ui->lbl_front_txt, ui->ScenePos, ui->ViewPortPosText);
     m_frontview = new FrontView(m_scene);
     m_timer = new QTimer(this);
     m_labelmanager = new LabelManager(m_scene);
@@ -28,7 +28,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_labelmanager, SIGNAL(unselectOthers(int32_t)), m_dataloader, SLOT(unselectOthers(int32_t)));
     connect(m_labelmanager, SIGNAL(setMultiChosen()), m_dataloader, SLOT(setMultiChosen()));
     connect(m_labelmanager, SIGNAL(selectDraggedArea(Bbox &)), m_dataloader, SLOT(selectDraggedArea(Bbox &)));
-    connect(m_labelmanager, SIGNAL(setRiderPoint(float_t, float_t)), m_dataloader, SLOT(setRiderPoint(float_t, float_t)));
+    connect(m_labelmanager, SIGNAL(setRiderPoint(float, float)), m_dataloader, SLOT(setRiderPoint(float, float)));
 
     connect(m_labelmanager, SIGNAL(setAddWheelMode(int32_t)), this, SLOT(setAddWheelMode(int32_t)));
     connect(m_labelmanager, SIGNAL(clickBackground()), this, SLOT(clickBackground()));
@@ -82,10 +82,14 @@ MainWindow::MainWindow(QWidget *parent)
 //    connect(zoom_fit_action, &QAction::triggered, [zoom_fit_button](){ zoom_fit_button->animateClick(); });
 
 
+    /*-----Add by Youngjae.Lee----*/
+
+
+
 #ifdef _DEBUG
-    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
-    ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
-    ui->edit_save_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\save_temp");
+//    ui->edit_gt_path->setText("D:/Dataset/zf/oe_annotation_tool_sample/GroundTruth");
+//    ui->edit_img_path->setText("D:/Dataset/zf/oe_annotation_tool_sample/Video.avi");
+//    ui->edit_save_path->setText("D:/Dataset/zf/oe_annotation_tool_sample/GroundTruth/Annotated");
 #endif
 }
 
@@ -243,16 +247,16 @@ void MainWindow::SetNewVideo(int32_t img_width, int32_t img_height)
 
 //    if ((ui->canvas->width()) / qreal(img_width + 4) < (ui->canvas->height()) / qreal(img_height + 4)) {
 //        prev_canvas_width = ui->canvas->width() - 4;
-//        prev_canvas_height = int32_t(img_height * (prev_canvas_width / (float_t)img_width));
+//        prev_canvas_height = int32_t(img_height * (prev_canvas_width / (float)img_width));
 //    }
 //    else {
 //        prev_canvas_height = ui->canvas->height() - 4;
-//        prev_canvas_width = int32_t(img_width * (prev_canvas_height / (float_t)img_height));
+//        prev_canvas_width = int32_t(img_width * (prev_canvas_height / (float)img_height));
 //    }
 
     if(is_initialized==false){
-        prev_frame_width = (float_t)img_width;
-        prev_frame_height = (float_t)img_height;
+        prev_frame_width = (float)img_width;
+        prev_frame_height = (float)img_height;
 //        curr_scale_ratio = 1.F;
     }
 
@@ -277,13 +281,13 @@ void MainWindow::fit_frame_to_canvas()
 //        is_canvas_size_changed = true;
 //    }
 
-    float_t min_ratio = std::min(((float_t)(canvas_w-8)/(prev_frame_width)), ((float_t)(canvas_h-8)/(prev_frame_height)));
+    float min_ratio = std::min(((float)(canvas_w-8)/(prev_frame_width)), ((float)(canvas_h-8)/(prev_frame_height)));
     ui->canvas->scale(min_ratio, min_ratio);
     prev_frame_width *= min_ratio;
     prev_frame_height *= min_ratio;
 
 //    if(curr_scale_ratio==1.F){// || is_canvas_size_changed==true){
-//        float_t min_ratio = std::min(((float_t)(canvas_w-8)/(prev_frame_width)), ((float_t)(canvas_h-8)/(prev_frame_height)));
+//        float min_ratio = std::min(((float)(canvas_w-8)/(prev_frame_width)), ((float)(canvas_h-8)/(prev_frame_height)));
 //        ui->canvas->scale(min_ratio, min_ratio);
 //        prev_frame_width *= min_ratio;
 //        prev_frame_height *= min_ratio;
@@ -381,39 +385,40 @@ void MainWindow::on_btn_save_clicked()
     m_dataloader->saveCurrGT();
 }
 
-void MainWindow::wheelEvent(QWheelEvent* event)
-{
-    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
-        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        float_t scale_ratio = 1.F;
-        if (event->angleDelta().y() > 0) {
-            scale_ratio = 1.1F;
-        }
-        else {
-            scale_ratio = 1.F/1.1F;
-        }
 
-        ui->canvas->scale(scale_ratio, scale_ratio);
-        prev_frame_width = prev_frame_width * scale_ratio;
-        prev_frame_height = prev_frame_height * scale_ratio;
+//void MainWindow::wheelEvent(QWheelEvent* event)
+//{
+//    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
+//        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+//        float scale_ratio = 1.F;
+//        if (event->angleDelta().y() > 0) {
+//            scale_ratio = 1.1F;
+//        }
+//        else {
+//            scale_ratio = 1.F/1.1F;
+//        }
+//        ui->canvas->scale(scale_ratio, scale_ratio);
+//        ui->canvas->centerOn(event->position());
+//        prev_frame_width = prev_frame_width * scale_ratio;
+//        prev_frame_height = prev_frame_height * scale_ratio;
 
-        event->accept();
-    }
-//    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-//    float_t scale_ratio = 1.F;
-//    if (event->angleDelta().y() > 0) {
-//        scale_ratio = 1.1F;
+//        event->accept();
 //    }
-//    else {
-//        scale_ratio = 1.F/1.1F;
-//    }
+////    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+////    float scale_ratio = 1.F;
+////    if (event->angleDelta().y() > 0) {
+////        scale_ratio = 1.1F;
+////    }
+////    else {
+////        scale_ratio = 1.F/1.1F;
+////    }
 
-//    ui->canvas->scale(scale_ratio, scale_ratio);
-//    prev_frame_width = prev_frame_width * scale_ratio;
-//    prev_frame_height = prev_frame_height * scale_ratio;
+////    ui->canvas->scale(scale_ratio, scale_ratio);
+////    prev_frame_width = prev_frame_width * scale_ratio;
+////    prev_frame_height = prev_frame_height * scale_ratio;
 
-//    event->accept();
-}
+////    event->accept();
+//}
 
 void MainWindow::on_btn_zoom_fit_clicked()
 {
@@ -681,4 +686,29 @@ void MainWindow::on_btn_move_frame_clicked()
 {
 //    int32_t move_frame_no = ui->edit_frame_no->text().toInt();
     changeFrame(ui->edit_frame_no->text().toInt()-1);
+}
+
+void MainWindow::on_Btn_SelGTPath_clicked()
+{
+    gt_root_ = QFileDialog::getExistingDirectory(this, tr("Select Ground Truth Directory"), tr(""));
+    ui->edit_gt_path->setText(gt_root_);
+}
+
+
+void MainWindow::on_Btn_SelOutputPath_clicked()
+{
+    output_root_ = QFileDialog::getExistingDirectory(this, tr("Select Output Directory"), tr(""));
+    ui->edit_save_path->setText(output_root_);
+}
+
+void MainWindow::on_Btn_SelVideo_clicked()
+{
+    video_path_ = QFileDialog::getOpenFileName(this, tr("Please select Video"), tr(""), tr("Video Files(*.avi)"));
+    ui->edit_img_path->setText(video_path_);
+}
+
+void MainWindow::on_Btn_SelImagePath_clicked()
+{
+    image_root_ = QFileDialog::getExistingDirectory(this, tr("Select Image Directory"), tr(""));
+    ui->edit_img_path->setText(image_root_);
 }
