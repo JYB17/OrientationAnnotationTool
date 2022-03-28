@@ -7,23 +7,18 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
 
-
     m_scene = new QGraphicsScene();
     m_dataloader = new DataLoader(ui->canvas, ui->LoadTypeText, ui->lbl_rear_txt, ui->lbl_front_txt, ui->ScenePos, ui->ViewPortPosText);
     m_frontview = new FrontView(m_scene);
     m_timer = new QTimer(this);
     m_labelmanager = new LabelManager(m_scene);
     m_timer->setInterval(20);
-//    m_timer->setInterval(30);
-
-//    m_dataloader->SetDrawInfo(&draw_info);
 
     ui->canvas->setScene(m_scene);
 
     connect(m_dataloader, SIGNAL(UpdateFrontImage(QImage*)), m_frontview, SLOT(UpdateFrontImage(QImage*)));
     connect(m_dataloader, SIGNAL(SetNewVideo(int32_t, int32_t)), this, SLOT(SetNewVideo(int32_t, int32_t)));
     connect(m_dataloader, SIGNAL(updateGtInfos(QVector<GtInfo>&, bool)), m_labelmanager, SLOT(drawAll(QVector<GtInfo>&, bool)));
-//    connect(m_dataloader, SIGNAL(updateGtInfos(QVector<GtInfo>&)), m_labelmanager, SLOT(drawAll(QVector<GtInfo>&)));
 
     connect(m_labelmanager, SIGNAL(unselectOthers(int32_t)), m_dataloader, SLOT(unselectOthers(int32_t)));
     connect(m_labelmanager, SIGNAL(setMultiChosen()), m_dataloader, SLOT(setMultiChosen()));
@@ -87,9 +82,9 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 #ifdef _DEBUG
-//    ui->edit_gt_path->setText("D:/Dataset/zf/oe_annotation_tool_sample/GroundTruth");
-//    ui->edit_img_path->setText("D:/Dataset/zf/oe_annotation_tool_sample/Video.avi");
-//    ui->edit_save_path->setText("D:/Dataset/zf/oe_annotation_tool_sample/GroundTruth/Annotated");
+//    ui->edit_gt_path->setText("D:/Dataset/zf/oe_test/1");
+//    ui->edit_img_path->setText("D:/Dataset/zf/oe_test/0");
+//    ui->edit_save_path->setText("D:/Dataset/zf/oe_test/2");
 #endif
 }
 
@@ -384,41 +379,6 @@ void MainWindow::on_btn_save_clicked()
 {
     m_dataloader->saveCurrGT();
 }
-
-
-//void MainWindow::wheelEvent(QWheelEvent* event)
-//{
-//    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
-//        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-//        float scale_ratio = 1.F;
-//        if (event->angleDelta().y() > 0) {
-//            scale_ratio = 1.1F;
-//        }
-//        else {
-//            scale_ratio = 1.F/1.1F;
-//        }
-//        ui->canvas->scale(scale_ratio, scale_ratio);
-//        ui->canvas->centerOn(event->position());
-//        prev_frame_width = prev_frame_width * scale_ratio;
-//        prev_frame_height = prev_frame_height * scale_ratio;
-
-//        event->accept();
-//    }
-////    ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-////    float scale_ratio = 1.F;
-////    if (event->angleDelta().y() > 0) {
-////        scale_ratio = 1.1F;
-////    }
-////    else {
-////        scale_ratio = 1.F/1.1F;
-////    }
-
-////    ui->canvas->scale(scale_ratio, scale_ratio);
-////    prev_frame_width = prev_frame_width * scale_ratio;
-////    prev_frame_height = prev_frame_height * scale_ratio;
-
-////    event->accept();
-//}
 
 void MainWindow::on_btn_zoom_fit_clicked()
 {

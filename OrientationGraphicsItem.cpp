@@ -266,25 +266,17 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
     QGraphicsItem::mousePressEvent(event);
     if(m_gtInfo.is_background==true){
         m_labelmanager->setBottomLayer(this);
-        if(event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){
+        if((event->modifiers() == Qt::Modifier::CTRL) &&
+            (event->button() == Qt::LeftButton)){
             // multi select by drag
             m_gtInfo.drag_chosen_area.x1 = event->pos().x();
             m_gtInfo.drag_chosen_area.y1 = event->pos().y();
         }
         else if(event->button() == Qt::LeftButton){
             m_gtInfo.is_not_dragging = true;
-
-//            float move_start_x = event->pos().x();
-//            float move_start_y = event->pos().y();
-
-//            emit m_labelmanager->setStartXY(move_start_x, move_start_y);
-
-////            m_gtInfo.drag_chosen_area.x1 = event->pos().x();
-////            m_gtInfo.drag_chosen_area.y1 = event->pos().y();
         }
     }
-//    if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
-    else if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
+    else if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){
         if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==true){
             m_gtInfo.is_chosen = true;
             m_labelmanager->setTopLayer(this);
@@ -300,13 +292,12 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             m_gtInfo.multi_chosen = false;
         }
     }
-    else if (event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
+    else if (event->button() == Qt::LeftButton){
         if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==true){
             m_gtInfo.is_chosen = true;
             m_labelmanager->setTopLayer(this);
 
             emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
-//            m_labelmanager->setTopLayer(this);
         }
         else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==true && m_gtInfo.vehicle_mode==true){// Need to add more condition
             m_gtInfo.is_chosen = true;
@@ -326,7 +317,6 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
         QMenu myMenu;
         myMenu.addAction("Set Top Layer");
         myMenu.addAction("Set Bottom Layer");
-//        myMenu.addAction("Set object class");
         myMenu.setGeometry(QCursor::pos().x(), QCursor::pos().y(), myMenu.sizeHint().width(), myMenu.sizeHint().height());
         auto selectedAction = myMenu.exec();
         if (selectedAction != nullptr) {
@@ -336,12 +326,6 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             else if (selectedAction->text() == "Set Bottom Layer") {
                 m_labelmanager->setBottomLayer(this);
             }
-//            else if (selectedAction->text() == "Set object class") {
-//                emit m_labelmanager->changeObjCls(m_gtInfo);
-//                m_gtInfo.is_chosen = true;
-//                m_labelmanager->setTopLayer(this);
-////                m_labelmanager->setBottomLayer(this);
-//            }
         }
     }
 }

@@ -7,11 +7,6 @@ TwoWheelerGraphicsItem::TwoWheelerGraphicsItem(LabelManager* label_manager, GtIn
     float rect_w = gt_info.bbox.x2 - gt_info.bbox.x1;
     float rect_h = gt_info.bbox.y2 - gt_info.bbox.y1;
 
-//    m_rect.setX(m_gtInfo.bbox.x1-0.5F*rect_w);
-//    m_rect.setY(m_gtInfo.bbox.y1);
-//    m_rect.setWidth(rect_w*2.F);
-//    m_rect.setHeight(rect_h*1.25F);
-
     m_rect.setX(gt_info.bbox.x1);
     m_rect.setY(gt_info.bbox.y1);
     m_rect.setWidth(rect_w);
@@ -22,7 +17,6 @@ TwoWheelerGraphicsItem::TwoWheelerGraphicsItem(LabelManager* label_manager, GtIn
 
     setFlags(ItemIsMovable | ItemSendsGeometryChanges);
     setAcceptHoverEvents(true);
-//    setAcceptDrops(true);
 
     setZValue(zValue);
     this->m_labelmanager = label_manager;
@@ -298,7 +292,7 @@ void TwoWheelerGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
 void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 {
     QGraphicsItem::mousePressEvent(event);
-    if(m_gtInfo.is_background==true){
+     if(m_gtInfo.is_background==true){
         m_labelmanager->setBottomLayer(this);
         if(event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){
             // multi select by drag
@@ -308,16 +302,8 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
         else if(event->button() == Qt::LeftButton){
             m_gtInfo.is_not_dragging = true;
 
-//            float move_start_x = event->pos().x();
-//            float move_start_y = event->pos().y();
-
-//            emit m_labelmanager->setStartXY(move_start_x, move_start_y);
-
-////            m_gtInfo.drag_chosen_area.x1 = event->pos().x();
-////            m_gtInfo.drag_chosen_area.y1 = event->pos().y();
         }
     }
-//    if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
     else if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
         if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false){
             m_gtInfo.is_chosen = true;
@@ -334,17 +320,11 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             m_gtInfo.multi_chosen = false;
         }
     }
-    else if (event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
+    else if (event->button() == Qt::LeftButton){
         if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==false && m_gtInfo.zoom_mode==false){
             m_gtInfo.is_chosen = true;
             m_labelmanager->setTopLayer(this);
-
-//            qDebug() << "2-wheeler chosen!!!";
-
-//            emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
-//            m_gtInfo.is_adding_wheel = true;
             emit m_labelmanager->setAddWheelMode(m_gtInfo.curr_idx);
-//            m_labelmanager->setTopLayer(this);
         }
         else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==true && m_gtInfo.vehicle_mode==false){
             m_gtInfo.is_chosen = true;
@@ -352,7 +332,12 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
 
             emit m_labelmanager->unselectOthers(m_gtInfo.curr_idx);
         }
-        else if(m_gtInfo.is_chosen==true && m_gtInfo.draw_enabled==true && m_gtInfo.multi_chosen==false && m_gtInfo.vehicle_mode==false && m_gtInfo.is_adding_wheel==true){
+        else if(m_gtInfo.is_chosen==true &&
+                m_gtInfo.draw_enabled==true &&
+                m_gtInfo.multi_chosen==false &&
+                m_gtInfo.vehicle_mode==false &&
+                m_gtInfo.is_adding_wheel==true)
+        {
             m_labelmanager->setTopLayer(this);
 
             emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
@@ -364,14 +349,12 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             }
             m_labelmanager->setBottomLayer(this);
 
-//            qDebug() << "2-wheeler unchosen!!!";
         }
     }
     else if (event->button() == Qt::RightButton) {
         QMenu myMenu;
         myMenu.addAction("Set Top Layer");
         myMenu.addAction("Set Bottom Layer");
-//        myMenu.addAction("Set object class");
         myMenu.setGeometry(QCursor::pos().x(), QCursor::pos().y(), myMenu.sizeHint().width(), myMenu.sizeHint().height());
         auto selectedAction = myMenu.exec();
         if (selectedAction != nullptr) {
@@ -381,12 +364,6 @@ void TwoWheelerGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             else if (selectedAction->text() == "Set Bottom Layer") {
                 m_labelmanager->setBottomLayer(this);
             }
-//            else if (selectedAction->text() == "Set object class") {
-//                emit m_labelmanager->changeObjCls(m_gtInfo);
-//                m_gtInfo.is_chosen = true;
-//                m_labelmanager->setTopLayer(this);
-////                m_labelmanager->setBottomLayer(this);
-//            }
         }
     }
 }

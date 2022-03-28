@@ -40,6 +40,7 @@ DataLoader::DataLoader(\
     zoom_factor_ = 1.0015F;
     this->viewport_pos_txt_ = viewport_pos_txt;
     this->scene_pos_txt_ = scene_pos_txt;
+    vc_ = nullptr;
 }
 
 DataLoader::~DataLoader()
@@ -116,7 +117,6 @@ void DataLoader::showFrame(){
     else{
         curr_frame_no = static_cast<int32_t>(vc_->get(cv::CAP_PROP_POS_FRAMES));
         (*vc_) >> curr_frame;
-        cv::cvtColor(curr_frame, curr_frame, cv::COLOR_RGB2BGR);
     }
 
     if(initialized==false){
@@ -494,11 +494,11 @@ void DataLoader::createQImage()
     cv::putText(curr_frame, std::to_string(curr_frame_no + 1) + "/" + std::to_string(num_frames), cv::Point(20, 40), 2, 1, cv::Scalar(), 3);
     cv::putText(curr_frame, std::to_string(curr_frame_no + 1) + "/" + std::to_string(num_frames), cv::Point(20, 40), 2, 1, cv::Scalar(255, 255, 255), 1);
     if (curr_img == nullptr) {
-        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_RGB888);
+        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_BGR888);
     }
     else {// if (curr_img ->width() != curr_frame.cols || curr_img ->height() != curr_frame.rows) {
         delete curr_img;
-        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_RGB888);
+        curr_img = new QImage(curr_frame.data, curr_frame.cols, curr_frame.rows, QImage::Format_BGR888);
     }
 }
 
@@ -803,54 +803,17 @@ QString DataLoader::getSelectedRiderWheelPoints(){
 
 bool DataLoader::eventFilter(QObject* obj, QEvent* event)
 {
-////    emit updateLabelInfos(gts_infos[curr_gt_idx]);
-////    if(event->type() == QEvent::KeyPress){
-////        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-////        if (keyEvent->key() == Qt::Key_N) {
-////            auto pos = this->viewWindow->mapFromGlobal(QCursor::pos());
-////            createNewFrameInfo(viewWindow->mapToScene(pos));
-////        }
-////        else if(keyEvent->key()==Qt::Key_D){
-////            deleteGtInfo();
-////        }
-////        else if(keyEvent->key()==Qt::Key_Escape){
-////            unchooseAll();
-////        }
-
-////        return true;
-////    }
-////    else if(event->type() == QEvent::MouseButtonPress){
     if(event->type() == QEvent::MouseButtonPress){
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-//        if(mouseEvent->modifiers()==Qt::Modifier::CTRL){
-//            drag_start_x = mouseEvent->pos().x();
-//            drag_start_y = mouseEvent->pos().y();
-//            viewWindow->grabMouse();
-//        }
-//        else{
         move_start_x = mouseEvent->pos().x();
         move_start_y = mouseEvent->pos().y();
         viewWindow->grabMouse();
-
-//        qDebug() << move_start_x << move_start_y;
-
         if(is_vehicle_mode==true){
             unselect_target = true;
         }
         else{
             add_rider = true;
         }
-//        }
-//        move_start_x = mouseEvent->pos().x();
-//        move_start_y = mouseEvent->pos().y();
-//        viewWindow->grabMouse();
-
-//        if(is_vehicle_mode==true){
-//            unselect_target = true;
-//        }
-//        else{
-//            add_rider = true;
-//        }
         viewWindow->releaseMouse();
         return true;
     }
@@ -858,12 +821,6 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
         int curr_x = mouseEvent->pos().x();
         int curr_y = mouseEvent->pos().y();
-//        if(mouseEvent->modifiers()==Qt::Modifier::CTRL){
-//            is_drag_mode = true;
-//        }
-//        else{
-//        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
-//        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
         move_start_x = curr_x;
         move_start_y = curr_y;
 
@@ -881,29 +838,8 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
         }
         this->viewport_pos_txt_->setText("ViewPort Pos: " + (QString::number(target_viewport_pos_.x()) + "," + QString::number(target_viewport_pos_.y())));
         this->scene_pos_txt_->setText("Scene Pos: " + (QString::number(target_scene_pos_.x()) + "," + QString::number(target_scene_pos_.y())));
-
-
-//        qDebug() << mouseEvent->pos().x() << mouseEvent->pos().y();
-//        }
-//        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
-//        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
-//        move_start_x = curr_x;
-//        move_start_y = curr_y;
-
-//        if(is_vehicle_mode==true){
-//            unselect_target = false;
-//        }
-//        else{
-//            add_rider = false;
-//        }
-
         return true;
     }
-//    else if(event->type() == QEvent::MouseButtonRelease){
-//        viewWindow->releaseMouse();
-
-//        return true;
-//    }
     else if(event->type() == QEvent::Wheel){
         QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
         if(wheel_event->modifiers() == Qt::KeyboardModifier::ControlModifier){
