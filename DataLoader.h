@@ -55,8 +55,8 @@ public:
     void setImgPath(QString const img_path);
     void setSavePath(QString const save_path);
 
-    void setRearWheelPoint(float_t x, float_t y);
-    void setFrontWheelPoint(float_t x, float_t y);
+    void setRearWheelPoint(float x, float y);
+    void setFrontWheelPoint(float x, float y);
     void deleteWheelPoint();
 
     bool checkOrigGtLoaded(){
@@ -71,16 +71,16 @@ public:
         unselectOthers(-1);
     }
 
-    void setFrameNo(int32_t frame_no){
+    void setFrameNo(int frame_no){
         this->curr_frame_no = frame_no;
     }
-    int32_t getFrameNo(){
+    int getFrameNo(){
         return this->curr_frame_no;
     }
-    int32_t getNumFrames(){
+    int getNumFrames(){
         return this->num_frames;
     }
-    GtInfo getGtInfo(int32_t idx){
+    GtInfo getGtInfo(int idx){
         return this->curr_gt_infos[idx];
     }
 
@@ -119,11 +119,13 @@ private:
     QString img_path;
     QString save_path;
 
-    int32_t frame_width;
-    int32_t frame_height;
+    int frame_width;
+    int frame_height;
 
     cv::Mat curr_frame;
     QImage* curr_img;
+
+    cv::VideoCapture *vc;
 
     bool initialized;
 
@@ -131,14 +133,14 @@ private:
     QString curr_img_name;
 
     QVector<QString> files_list;
-    int32_t num_frames;
-    int32_t curr_frame_no;
+    int num_frames;
+    int curr_frame_no;
 
     QVector<GtInfo> curr_gt_infos;
     QVector<GtInfo> orig_gt_infos;
 
     QVector<QVector<GtInfo>> prev_done_gts;
-    int32_t undo_redo_idx;
+    int undo_redo_idx;
     bool undo_flag;
 
     QGraphicsView* viewWindow;
@@ -146,13 +148,13 @@ private:
     QLabel* rear_coord_txt;// = nullptr;
     QLabel* front_coord_txt;// = nullptr;
 
-    int32_t move_start_x;
-    int32_t move_start_y;
+    int move_start_x;
+    int move_start_y;
 
-    int32_t drag_start_x;
-    int32_t drag_start_y;
-    int32_t drag_end_x;
-    int32_t drag_end_y;
+    int drag_start_x;
+    int drag_start_y;
+    int drag_end_x;
+    int drag_end_y;
     bool is_drag_mode = false;
 
     bool is_new_gt_mode = false;
@@ -176,24 +178,30 @@ private:
 
     bool start_w_orig_gt = true;
 
+    void Zoom(float factor);
+    QPointF target_scene_pos;
+    QPointF target_viewport_pos;
+    float zoom_factor;
+
 //    DrawInfo const* ptr_draw_info;
 
 signals:
     void UpdateFrontImage(QImage* img);
-    void SetNewVideo(int32_t img_width, int32_t img_height);
+    void SetNewVideo(int img_width, int img_height);
     void updateGtInfos(QVector<GtInfo> &gts_info, bool change_gt_mode);
+    void zoomed();
 //    void updateGtInfos(QVector<GtInfo> &gts_info);
 
 protected:
     virtual bool eventFilter(QObject* obj, QEvent* event) override;
 
 private slots:
-    void unselectOthers(int32_t curr_idx);
+    void unselectOthers(int curr_idx);
     void setMultiChosen();
     void selectDraggedArea(Bbox &dragged_area);
-    void setRiderPoint(float_t x, float_t y);
-//    void dragZoomFocusedArea(float_t x, float_t y);
-//    void setStartXY(float_t x, float_t y);
+    void setRiderPoint(float x, float y);
+//    void dragZoomFocusedArea(float x, float y);
+//    void setStartXY(float x, float y);
 
 };
 

@@ -14,6 +14,8 @@ DataLoader::DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *
     curr_img = nullptr;
     initialized = false;
 
+    vc = nullptr;
+
     unselect_target = false;
 
     is_vehicle_mode = true;
@@ -24,6 +26,8 @@ DataLoader::DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *
     rear_enabled = false;
     front_enabled = false;
 
+    zoom_factor = 1.0015F;
+//    this->viewWindow->viewport()->installEventFilter(this);
     this->viewWindow->installEventFilter(this);
 }
 
@@ -32,6 +36,7 @@ DataLoader::~DataLoader()
     delete viewWindow;
     delete viewText;
     delete curr_img;
+    delete vc;
     delete rear_coord_txt;
     delete front_coord_txt;
 }
@@ -53,7 +58,7 @@ void DataLoader::setGTPath(QString const gt_path)
 
     QDir dir(gt_path);
     QStringList temp_list = dir.entryList(QDir::Filter::Files);
-    int32_t curr_idx = 0;
+    int curr_idx = 0;
     for (int i = 0; i < temp_list.size(); i++) {
         if (!temp_list.at(i).endsWith(".json")) {
             continue;
@@ -73,6 +78,13 @@ void DataLoader::setImgPath(QString const img_path)
     this->img_path = img_path;
     curr_frame_no = 0;
 
+    if(this->img_path.endsWith("avi") == true){
+        vc = new cv::VideoCapture(this->img_path.toStdString());
+        if(vc->isOpened() != true){
+            delete vc;
+            vc = nullptr;
+        }
+    }
     showFrame();
 //    viewText->setText("Successfully loaded " + QString::number(num_frames) + " GT files and frame images!");
 }
@@ -82,13 +94,19 @@ void DataLoader::setSavePath(QString const save_path){
 }
 
 void DataLoader::showFrame(){
-    curr_img_name = img_path + "\\" + files_list[curr_frame_no] + ".png";
-//    curr_gt_name = gt_path + "\\" + files_list[curr_frame_no] + ".json";
+    if(vc==nullptr){
+        curr_img_name = img_path + "\\" + files_list[curr_frame_no] + ".png";
+        curr_frame = cv::imread(curr_img_name.toStdString());
+    }
+    else{
+        vc->set(cv::CAP_PROP_POS_FRAMES, curr_frame_no);
+        (*vc) >> curr_frame;
+    }
+
     prev_done_gts.clear();
     undo_flag = false;
     undo_redo_idx = -1;
 
-    curr_frame = cv::imread(curr_img_name.toStdString());
     if(initialized==false){
         frame_width = curr_frame.cols;
         frame_height = curr_frame.rows;
@@ -115,12 +133,12 @@ void DataLoader::savePrevInfos()
 
     QVector<GtInfo> prev_gts;
     prev_gts.clear();
-    for(int32_t i=0; i<curr_gt_infos.size(); i++){
+    for(int i=0; i<curr_gt_infos.size(); i++){
         GtInfo prev_gt;
         prev_gt.dir_angle = curr_gt_infos[i].dir_angle;
         prev_gt.X = curr_gt_infos[i].X;
         prev_gt.Y = curr_gt_infos[i].Y;
-        for(int32_t j=0; j<8; j++){
+        for(int j=0; j<8; j++){
             prev_gt.x[j] = curr_gt_infos[i].x[j];
             prev_gt.y[j] = curr_gt_infos[i].y[j];
         }
@@ -156,7 +174,7 @@ void DataLoader::unDo()
 
     if(undo_redo_idx>0){
         curr_gt_infos.clear();
-        for(int32_t i=0; i<prev_done_gts[undo_redo_idx-1].size(); i++){
+        for(int i=0; i<prev_done_gts[undo_redo_idx-1].size(); i++){
             curr_gt_infos.append(prev_done_gts[undo_redo_idx-1][i]);
         }
         undo_redo_idx = std::max(0, undo_redo_idx-1);
@@ -169,7 +187,7 @@ void DataLoader::reDo()
 {
     if(undo_redo_idx<(prev_done_gts.size()-1)){
         curr_gt_infos.clear();
-        for(int32_t i=0; i<prev_done_gts[undo_redo_idx+1].size(); i++){
+        for(int i=0; i<prev_done_gts[undo_redo_idx+1].size(); i++){
             curr_gt_infos.append(prev_done_gts[undo_redo_idx+1][i]);
         }
         undo_redo_idx = std::min(undo_redo_idx+1, prev_done_gts.size()-1);
@@ -181,14 +199,14 @@ void DataLoader::reDo()
 void DataLoader::copyOrigGT(){
     orig_gt_infos.clear();
 
-    int32_t num_gts = curr_gt_infos.size();
-    for(int32_t i=0; i<num_gts; i++){
+    int num_gts = curr_gt_infos.size();
+    for(int i=0; i<num_gts; i++){
         GtInfo orig_gt;
         orig_gt.bbox.x1 = curr_gt_infos[i].bbox.x1;
         orig_gt.bbox.y1 = curr_gt_infos[i].bbox.y1;
         orig_gt.bbox.x2 = curr_gt_infos[i].bbox.x2;
         orig_gt.bbox.y2 = curr_gt_infos[i].bbox.y2;
-        for(int32_t j=0; j<8; j++){
+        for(int j=0; j<8; j++){
             orig_gt.x[j] = curr_gt_infos[i].x[j];
             orig_gt.y[j] = curr_gt_infos[i].y[j];
         }
@@ -224,14 +242,14 @@ void DataLoader::reInitGtInfos(bool vehicle_mode, bool zoom_mode){
 
     curr_gt_infos.clear();
 
-    int32_t num_gts = orig_gt_infos.size();
-    for(int32_t i=0; i<num_gts; i++){
+    int num_gts = orig_gt_infos.size();
+    for(int i=0; i<num_gts; i++){
         GtInfo orig_gt;
         orig_gt.bbox.x1 = orig_gt_infos[i].bbox.x1;
         orig_gt.bbox.y1 = orig_gt_infos[i].bbox.y1;
         orig_gt.bbox.x2 = orig_gt_infos[i].bbox.x2;
         orig_gt.bbox.y2 = orig_gt_infos[i].bbox.y2;
-        for(int32_t j=0; j<8; j++){
+        for(int j=0; j<8; j++){
             orig_gt.x[j] = orig_gt_infos[i].x[j];
             orig_gt.y[j] = orig_gt_infos[i].y[j];
         }
@@ -297,9 +315,9 @@ void DataLoader::readJson(){
     QByteArray log_data = log_file.readAll();
     QJsonDocument log_doc(QJsonDocument::fromJson(log_data));
     QJsonArray curr_objs = log_doc.object()["objects"].toArray();
-//    int32_t num_objs = log_doc.object()["num_objs"].toInt();
-    int32_t num_objs = curr_objs.size();
-    for(int32_t i=0; i<num_objs; i++){
+//    int num_objs = log_doc.object()["num_objs"].toInt();
+    int num_objs = curr_objs.size();
+    for(int i=0; i<num_objs; i++){
         QJsonObject curr_obj = curr_objs[i].toObject();
         GtInfo curr_gt;
         curr_gt.bbox.x1 = curr_obj["bbox"].toArray()[0].toDouble();
@@ -317,7 +335,7 @@ void DataLoader::readJson(){
         else
             curr_gt.Y = curr_obj["Y"].toDouble();
 
-        int32_t bbox_3d_size = curr_obj["bbox_3d"].toObject()["x"].toArray().size();
+        int bbox_3d_size = curr_obj["bbox_3d"].toObject()["x"].toArray().size();
         if(bbox_3d_size==2){
             curr_gt.is_2_wheeler = true;
             curr_gt.is_svnet_rider = true;
@@ -330,7 +348,7 @@ void DataLoader::readJson(){
             if(curr_obj["label"].toDouble()==3.F){
                 curr_gt.is_2_wheeler = true;
             }
-            for(int32_t j=0; j<bbox_3d_size; j++){
+            for(int j=0; j<bbox_3d_size; j++){
                 curr_gt.x[j] = curr_obj["bbox_3d"].toObject()["x"].toArray()[j].toDouble();
                 curr_gt.y[j] = curr_obj["bbox_3d"].toObject()["y"].toArray()[j].toDouble();
             }
@@ -378,9 +396,9 @@ void DataLoader::saveCurrGT(){
         Json::Value out_json;
         out_json["frame_id"] = curr_frame_no + 1;
 //        out_json["num_objs"] = curr_gt_infos.size();
-        const int32_t obj_size = curr_gt_infos.size();
+        const int obj_size = curr_gt_infos.size();
         bool has_background = false;
-        for (int32_t i = 0; i < obj_size; i++) {
+        for (int i = 0; i < obj_size; i++) {
             Json::Value object;
             if(curr_gt_infos[i].is_background==true){
                 has_background = true;
@@ -402,7 +420,7 @@ void DataLoader::saveCurrGT(){
                 object["bbox"] = obj_coords;
                 Json::Value od_3d_coords_x;
                 Json::Value od_3d_coords_y;
-                for (int32_t j = 0; j < 8; j++) {
+                for (int j = 0; j < 8; j++) {
                     od_3d_coords_x.append(curr_gt_infos[i].x[j]);
                     od_3d_coords_y.append(curr_gt_infos[i].y[j]);
                 }
@@ -475,9 +493,9 @@ void DataLoader::createQImage()
     }
 }
 
-void DataLoader::unselectOthers(int32_t curr_idx){
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+void DataLoader::unselectOthers(int curr_idx){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_idx!=i){
             curr_gt_infos[i].is_chosen = false;
             curr_gt_infos[i].is_adding_wheel = false;
@@ -489,8 +507,8 @@ void DataLoader::unselectOthers(int32_t curr_idx){
 }
 
 void DataLoader::setMultiChosen(){
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].multi_chosen==false){
             curr_gt_infos[i].multi_chosen = true;
             break;
@@ -500,8 +518,8 @@ void DataLoader::setMultiChosen(){
 
 void DataLoader::selectDraggedArea(Bbox &dragged_area){
 //    unselectOthers(-1);
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_background==true){// || curr_gt_infos[i].is_2_wheeler==true){
             continue;
         }
@@ -534,10 +552,10 @@ void DataLoader::selectDraggedArea(Bbox &dragged_area){
     }
 }
 
-//void DataLoader::dragZoomFocusedArea(float_t x, float_t y){
+//void DataLoader::dragZoomFocusedArea(float x, float y){
 //    // TODO: implement this function
-//    int32_t curr_hor = viewWindow->horizontalScrollBar()->value() - ((int)x - move_start_x);
-//    int32_t curr_ver = viewWindow->verticalScrollBar()->value() - ((int)y - move_start_y);
+//    int curr_hor = viewWindow->horizontalScrollBar()->value() - ((int)x - move_start_x);
+//    int curr_ver = viewWindow->verticalScrollBar()->value() - ((int)y - move_start_y);
 ////    viewWindow->horizontalScrollBar()->setValue(std::max(0, curr_hor));
 ////    viewWindow->verticalScrollBar()->setValue(std::max(0, curr_ver));
 //    viewWindow->horizontalScrollBar()->setValue(0);
@@ -550,23 +568,23 @@ void DataLoader::selectDraggedArea(Bbox &dragged_area){
 ////    qDebug() << "Y" << dragged_area.y1 << "-->" << dragged_area.y2 << "\n";
 //}
 
-//void DataLoader::setStartXY(float_t x, float_t y){
+//void DataLoader::setStartXY(float x, float y){
 //    move_start_x = x;
 //    move_start_y = y;
 //}
 
-void DataLoader::setRiderPoint(float_t x, float_t y){
+void DataLoader::setRiderPoint(float x, float y){
     GtInfo temp_rider_point;
     temp_rider_point.is_valid = false;
     temp_rider_point.is_2_wheeler = true;
     temp_rider_point.vehicle_mode = false;
     if(rear_enabled==true){
-        rear_coord_txt->setText(QString::number((int32_t)x)+", "+QString::number((int32_t)y));
+        rear_coord_txt->setText(QString::number((int)x)+", "+QString::number((int)y));
         temp_rider_point.rear_x = x;
         temp_rider_point.rear_y = y;
     }
     else if(front_enabled==true){
-        front_coord_txt->setText(QString::number((int32_t)x)+", "+QString::number((int32_t)y));
+        front_coord_txt->setText(QString::number((int)x)+", "+QString::number((int)y));
         temp_rider_point.front_x = x;
         temp_rider_point.front_y = y;
     }
@@ -578,8 +596,8 @@ void DataLoader::setRiderPoint(float_t x, float_t y){
 void DataLoader::deleteGTs(){
     savePrevInfos();
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=obj_size-1; i>-1; i--){
+    int obj_size = curr_gt_infos.size();
+    for(int i=obj_size-1; i>-1; i--){
         if(curr_gt_infos[i].is_chosen==true){
             curr_gt_infos.removeAt(i);
         }
@@ -595,8 +613,8 @@ void DataLoader::editGTs(editMode mode){
     }
     bool change_gt_mode = false;
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(mode==chooseAll){
             curr_gt_infos[i].is_chosen = true;
             curr_gt_infos[i].is_first = false;
@@ -620,7 +638,7 @@ void DataLoader::editGTs(editMode mode){
             curr_gt_infos[i].draw_enabled = !(curr_gt_infos[i].draw_enabled);
         }
         else if(mode==changeAngle && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].dir_angle>-0.1F){
-            float_t rotated_angle = curr_gt_infos[i].dir_angle + 90.F;
+            float rotated_angle = curr_gt_infos[i].dir_angle + 90.F;
             curr_gt_infos[i].dir_angle = rotated_angle<360.F ? rotated_angle : (rotated_angle-360.F);
             change_gt_mode = true;
         }
@@ -635,11 +653,11 @@ void DataLoader::editGTs(editMode mode){
     emit updateGtInfos(curr_gt_infos, change_gt_mode);
 }
 
-void DataLoader::setRearWheelPoint(float_t x, float_t y){
+void DataLoader::setRearWheelPoint(float x, float y){
     savePrevInfos();
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_adding_wheel==true){
             curr_gt_infos[i].rear_x = x;
             curr_gt_infos[i].rear_y = y;
@@ -650,11 +668,11 @@ void DataLoader::setRearWheelPoint(float_t x, float_t y){
     emit updateGtInfos(curr_gt_infos, true);
 }
 
-void DataLoader::setFrontWheelPoint(float_t x, float_t y){
+void DataLoader::setFrontWheelPoint(float x, float y){
     savePrevInfos();
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_adding_wheel==true){
             curr_gt_infos[i].front_x = x;
             curr_gt_infos[i].front_y = y;
@@ -669,8 +687,8 @@ void DataLoader::setFrontWheelPoint(float_t x, float_t y){
 void DataLoader::deleteWheelPoint(){
     savePrevInfos();
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==true){
             curr_gt_infos[i].rear_x = -1.F;
             curr_gt_infos[i].rear_y = -1.F;
@@ -687,9 +705,9 @@ void DataLoader::setVehicleMode(){
     this->is_vehicle_mode = true;
     this->is_zoom_mode = false;
 
-    int32_t obj_size = curr_gt_infos.size();
+    int obj_size = curr_gt_infos.size();
     bool has_background = false;
-    for(int32_t i=0; i<obj_size; i++){
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_background==true){
             has_background = true;
         }
@@ -712,9 +730,9 @@ void DataLoader::setRiderMode(){
     this->is_vehicle_mode = false;
     this->is_zoom_mode = false;
 
-    int32_t obj_size = curr_gt_infos.size();
+    int obj_size = curr_gt_infos.size();
     bool has_background = false;
-    for(int32_t i=0; i<obj_size; i++){
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_background==true){
             has_background = true;
         }
@@ -742,8 +760,8 @@ void DataLoader::zoomMode(){
     this->is_vehicle_mode = false;
     this->is_zoom_mode = true;
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=obj_size-1; i>-1; i--){
+    int obj_size = curr_gt_infos.size();
+    for(int i=obj_size-1; i>-1; i--){
         if(curr_gt_infos[i].is_background==true){
             curr_gt_infos.removeAt(i);
             continue;
@@ -761,8 +779,8 @@ void DataLoader::zoomMode(){
 QString DataLoader::getSelectedRiderWheelPoints(){
     QString out_string = "";
 
-    int32_t obj_size = curr_gt_infos.size();
-    for(int32_t i=0; i<obj_size; i++){
+    int obj_size = curr_gt_infos.size();
+    for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].multi_chosen==false && curr_gt_infos[i].is_svnet_rider==true){
             out_string += "Rear: (" + QString::number(curr_gt_infos[i].rear_x) + ", " + QString::number(curr_gt_infos[i].rear_y) + ") \n";
             out_string += "Front: (" + QString::number(curr_gt_infos[i].front_x) + ", " + QString::number(curr_gt_infos[i].front_y) + ") \n";
@@ -871,6 +889,17 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
     else{
         return false;
     }
+}
+
+void DataLoader::Zoom(float factor){
+    viewWindow->scale(factor, factor);
+    viewWindow->centerOn(target_scene_pos);
+    QPointF delta_viewport_pos = target_viewport_pos - QPointF(viewWindow->viewport()->width() / 2.0,
+                                                               viewWindow->viewport()->height() / 2.0);
+    QPointF viewport_center = viewWindow->mapFromScene(target_scene_pos) - delta_viewport_pos;
+    viewWindow->centerOn(viewWindow->mapToScene(viewport_center.toPoint()));
+
+    emit zoomed();
 }
 
 

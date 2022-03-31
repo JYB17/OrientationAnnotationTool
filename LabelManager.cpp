@@ -17,7 +17,7 @@ void LabelManager::drawAll(QVector<GtInfo> &gts_info, bool change_gt_mode)
         delete item;
     }
     m_items.clear();
-//    int32_t invalid_idx = -1;
+//    int invalid_idx = -1;
 //    TwoWheelerGraphicsItem *invalid_item = nullptr;
     for (int i = 0; i < gts_info.size(); i++) {
 //        OrientationGraphicsItem *item = nullptr;

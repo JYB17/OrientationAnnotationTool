@@ -26,7 +26,7 @@ public:
 private slots:
     void timeout();
 
-    void SetNewVideo(int32_t img_width, int32_t img_height);
+    void SetNewVideo(int img_width, int img_height);
 
     void on_actionLoad_All_triggered();
 
@@ -82,7 +82,7 @@ private slots:
 
     void on_check_show_orig_clicked();
 
-    void setAddWheelMode(int32_t curr_idx);
+    void setAddWheelMode(int curr_idx);
     void clickBackground();
     void setNewGtMode();
 
@@ -92,8 +92,16 @@ private slots:
 
     void on_btn_move_frame_clicked();
 
+    void on_btn_select_gt_clicked();
+
+    void on_btn_select_img_clicked();
+
+    void on_btn_select_vid_clicked();
+
+    void on_btn_select_save_clicked();
+
 private:
-    void changeFrame(int32_t frame_no);
+    void changeFrame(int frame_no);
     void play_video();
     void pause_video();
 
@@ -107,17 +115,17 @@ private:
     QTimer *m_timer;
     LabelManager *m_labelmanager;
 
-    int32_t prev_canvas_width;
-    int32_t prev_canvas_height;
+    int prev_canvas_width;
+    int prev_canvas_height;
 
-    float_t prev_frame_width;
-    float_t prev_frame_height;
-    float_t curr_scale_ratio;
+    float prev_frame_width;
+    float prev_frame_height;
+    float curr_scale_ratio;
 
-    int32_t frame_width;
-    int32_t frame_height;
+    int frame_width;
+    int frame_height;
 
-    int32_t num_frames;
+    int num_frames;
 
     bool saved_flag = false;
     bool selected_checked = false;

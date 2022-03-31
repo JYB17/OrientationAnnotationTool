@@ -12,8 +12,8 @@
 #include "InfoStructure.h"
 #include "LabelManager.h"
 
-//constexpr float_t RAD2DEG = 180.F / 3.141592F;
-//constexpr float_t DEG2RAD = 1.F / RAD2DEG;
+//constexpr float RAD2DEG = 180.F / 3.141592F;
+//constexpr float DEG2RAD = 1.F / RAD2DEG;
 
 class TwoWheelerGraphicsItem : public QGraphicsItem {
 
@@ -44,16 +44,16 @@ private:
     eResizeDirection m_itemController;
     LabelManager* m_labelmanager;// = nullptr;
 
-    float_t x_center;
-    float_t y_center;
+    float x_center;
+    float y_center;
 
-//    float_t rect_w = 0.F;
-//    float_t rect_h = 0.F;
+//    float rect_w = 0.F;
+//    float rect_h = 0.F;
 
-//    float_t min_x;
-//    float_t min_y;
-//    float_t max_x;
-//    float_t max_y;
+//    float min_x;
+//    float min_y;
+//    float max_x;
+//    float max_y;
 //    bool has_one_wheel = false;
 
     void ResizeTop(QPointF mouse_pos);
@@ -65,7 +65,7 @@ private:
 
     bool multiple_chosen;
 
-    float_t calculateAngleInImage(float_t orig_angle){
+    float calculateAngleInImage(float orig_angle){
 //        return 0.F;
         return 360.F*DEG2RAD - (orig_angle*DEG2RAD + 90.F*DEG2RAD);
     }

@@ -8,8 +8,8 @@
 
 #include "InfoStructure.h"
 
-constexpr float_t RAD2DEG = 180.F / 3.141592F;
-constexpr float_t DEG2RAD = 1.F / RAD2DEG;
+constexpr float RAD2DEG = 180.F / 3.141592F;
+constexpr float DEG2RAD = 1.F / RAD2DEG;
 
 class LabelManager : public QObject
 {
@@ -33,12 +33,12 @@ signals:
     void changeObjCls(GtInfo &gt_info);
     void saveUndoRedo();
 
-    void unselectOthers(int32_t curr_idx);
+    void unselectOthers(int curr_idx);
     void clickBackground();
     void setMultiChosen();
     void selectDraggedArea(Bbox &dragged_area);
-    void setRiderPoint(float_t x, float_t y);
-    void setAddWheelMode(int32_t curr_idx);
+    void setRiderPoint(float x, float y);
+    void setAddWheelMode(int curr_idx);
 
     void setNewGtMode();
 
