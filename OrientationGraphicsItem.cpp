@@ -197,6 +197,18 @@ void OrientationGraphicsItem::mouseReleaseEvent(QGraphicsSceneMouseEvent* event)
         emit m_labelmanager->clickBackground();
     }
 //    else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==false && event->button() == Qt::LeftButton){
+//        m_gtInfo.is_not_dragging = false;
+////        if(m_gtInfo.vehicle_mode==false){
+////            // set rider points
+////            emit m_labelmanager->setRiderPoint(event->pos().x(), event->pos().y());
+////        }
+////        else{
+////            emit m_labelmanager->unselectOthers(-1);
+////        }
+////        emit m_labelmanager->unselectOthers(-1);
+//        emit m_labelmanager->addBackground();
+//    }
+//    else if(m_gtInfo.is_background==true && m_gtInfo.is_not_dragging==false && event->button() == Qt::LeftButton){
 //        // zoom dragging
 //    }
 //    if(m_gtInfo.is_chosen==true && m_gtInfo.is_first==true){
@@ -212,51 +224,10 @@ void OrientationGraphicsItem::mouseMoveEvent(QGraphicsSceneMouseEvent* event)
     if(m_gtInfo.is_background==true && event->modifiers() != Qt::Modifier::CTRL){// && event->button()==Qt::LeftButton){
         m_gtInfo.is_not_dragging = false;
 
+        emit m_labelmanager->removeBackground();
+
 //        qDebug() << event->pos().x() << event->pos().y();
     }
-//    if (m_gtInfo.is_chosen == true) {
-//        m_gtInfo.move_resize = true;
-//        if (event->buttons() & Qt::LeftButton && m_itemController == eNone) {
-////            if(m_gtInfo.is_first==false)
-////                QGraphicsItem::mouseMoveEvent(event);
-//        }
-//        else if (event->buttons() & Qt::LeftButton && m_itemController != eNone) {
-//            auto mouse_pos = event->pos();
-//            if (m_itemController == eB) {
-//                ResizeBottom(mouse_pos);
-//            }
-//            if (m_itemController == eR) {
-//                ResizeRight(mouse_pos);
-//            }
-//            if (m_itemController == eT) {
-//                ResizeTop(mouse_pos);
-//            }
-//            if (m_itemController == eL) {
-//                ResizeLeft(mouse_pos);
-//            }
-//            if (m_itemController == eLT) {
-//                ResizeLeft(mouse_pos);
-//                ResizeTop(mouse_pos);
-//            }
-//            if (m_itemController == eRT) {
-//                ResizeRight(mouse_pos);
-//                ResizeTop(mouse_pos);
-//            }
-//            if (m_itemController == eLB) {
-//                ResizeLeft(mouse_pos);
-//                ResizeBottom(mouse_pos);
-//            }
-//            if (m_itemController == eRB) {
-//                ResizeRight(mouse_pos);
-//                ResizeBottom(mouse_pos);
-//            }
-
-//            prepareGeometryChange();
-
-////            qDebug() << m_gtInfo.bbox.x1 << m_gtInfo.bbox.y1 << m_gtInfo.bbox.x2 << m_gtInfo.bbox.y2;
-////            emit m_labelmanager->updateChangedInfos(m_gtInfo, zValue());
-//        }
-//    }
 }
 
 void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)

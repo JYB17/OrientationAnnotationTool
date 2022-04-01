@@ -91,6 +91,15 @@ public:
         this->front_enabled = t_f;
     }
 
+//    void setPrevWidthHeight(float width, float height){
+//        this->prev_frame_width = width;
+//        this->prev_frame_height = height;
+//    }
+//    void getPrevWidthHeight(float& width, float& height){
+//        width = this->prev_frame_width;
+//        height = this->prev_frame_height;
+//    }
+
     void addNewRider(GtInfo &new_rider_gt);
 
 //    void showCurrRiderGTs();
@@ -178,10 +187,15 @@ private:
 
     bool start_w_orig_gt = true;
 
-    void Zoom(float factor);
-    QPointF target_scene_pos;
-    QPointF target_viewport_pos;
-    float zoom_factor;
+//    void Zoom(float factor);
+    bool is_mouse_pressed = false;
+    bool is_mouse_moving = false;
+//    float prev_frame_width;
+//    float prev_frame_height;
+
+//    QPointF target_scene_pos;
+//    QPointF target_viewport_pos;
+//    float zoom_factor;
 
 //    DrawInfo const* ptr_draw_info;
 
@@ -189,7 +203,7 @@ signals:
     void UpdateFrontImage(QImage* img);
     void SetNewVideo(int img_width, int img_height);
     void updateGtInfos(QVector<GtInfo> &gts_info, bool change_gt_mode);
-    void zoomed();
+//    void zoomed();
 //    void updateGtInfos(QVector<GtInfo> &gts_info);
 
 protected:
@@ -200,6 +214,9 @@ private slots:
     void setMultiChosen();
     void selectDraggedArea(Bbox &dragged_area);
     void setRiderPoint(float x, float y);
+
+    void removeBackground();
+//    void addBackground();
 //    void dragZoomFocusedArea(float x, float y);
 //    void setStartXY(float x, float y);
 

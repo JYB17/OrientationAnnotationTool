@@ -41,6 +41,8 @@ signals:
     void setAddWheelMode(int curr_idx);
 
     void setNewGtMode();
+    void removeBackground();
+//    void addBackground();
 
 private slots:
     void drawAll(QVector<GtInfo> &gts_info, bool change_gt_mode);

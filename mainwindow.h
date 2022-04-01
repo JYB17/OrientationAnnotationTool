@@ -72,7 +72,7 @@ private slots:
 
     void on_btn_enter_front_clicked();
 
-    void on_radio_zoom_clicked();
+//    void on_radio_zoom_clicked();
 
     void on_btn_load_gts_imgs_clicked();
 
@@ -118,6 +118,8 @@ private:
     int prev_canvas_width;
     int prev_canvas_height;
 
+    float scaleFactor = 1.15F;
+
     float prev_frame_width;
     float prev_frame_height;
     float curr_scale_ratio;
@@ -138,5 +140,6 @@ private:
 
 protected:
     virtual void wheelEvent(QWheelEvent* event) override;
+    virtual bool eventFilter(QObject* obj, QEvent* event) override;
 };
 #endif // MAINWINDOW_H

@@ -20,6 +20,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->canvas->setScene(m_scene);
 
+    ui->canvas->scene()->installEventFilter(this);
+
     connect(m_dataloader, SIGNAL(UpdateFrontImage(QImage*)), m_frontview, SLOT(UpdateFrontImage(QImage*)));
     connect(m_dataloader, SIGNAL(SetNewVideo(int, int)), this, SLOT(SetNewVideo(int, int)));
     connect(m_dataloader, SIGNAL(updateGtInfos(QVector<GtInfo>&, bool)), m_labelmanager, SLOT(drawAll(QVector<GtInfo>&, bool)));
@@ -33,6 +35,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(m_labelmanager, SIGNAL(setAddWheelMode(int)), this, SLOT(setAddWheelMode(int)));
     connect(m_labelmanager, SIGNAL(clickBackground()), this, SLOT(clickBackground()));
     connect(m_labelmanager, SIGNAL(setNewGtMode()), this, SLOT(setNewGtMode()));
+
+    connect(m_labelmanager, SIGNAL(removeBackground()), m_dataloader, SLOT(removeBackground()));
+//    connect(m_labelmanager, SIGNAL(addBackground()), m_dataloader, SLOT(addBackground()));
 
     connect(m_timer, SIGNAL(timeout()), this, SLOT(timeout()));
 
@@ -83,12 +88,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 
 #ifdef _DEBUG
-//    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
-//    ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
-//    ui->edit_save_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\save_temp");
-    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\oe_annotation_tool_sample\\GroundTruth");
-    ui->edit_img_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\oe_annotation_tool_sample\\images");
-    ui->edit_save_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\oe_annotation_tool_sample\\saved");
+    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\inputs_temp\\FN-ZF-8884_2020-11-11-14-02-32");
+    ui->edit_img_path->setText("V:\\C_19_ZF_L4_ZFL4TRM\\Data\\Customer_Mass\\Mass_data\\FN-ZF-8884_2020-11-11-14-02-32\\CAM-WA-FM-FORWARD\\images");
+    ui->edit_save_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\save_temp");
+//    ui->edit_gt_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\oe_annotation_tool_sample\\GroundTruth");
+//    ui->edit_img_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\oe_annotation_tool_sample\\images");
+//    ui->edit_save_path->setText("C:\\Users\\JYB\\Desktop\\ODP\\orientation_annotation\\oe_annotation_tool_sample\\saved");
 #endif
 }
 
@@ -100,6 +105,40 @@ MainWindow::~MainWindow()
     delete m_dataloader;
     delete m_frontview;
     delete m_timer;
+}
+
+bool MainWindow::eventFilter(QObject* obj, QEvent* event)
+{
+    if (event->type() == QEvent::GraphicsSceneWheel){
+        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+        bool ok = QApplication::keyboardModifiers() & Qt::ControlModifier;
+        if (ok){
+            QGraphicsSceneWheelEvent *scrollevent = static_cast<QGraphicsSceneWheelEvent *>(event);
+            float scale_ratio = scrollevent->delta() > 0 ? scaleFactor : 1.F/scaleFactor;
+            ui->canvas->scale(scale_ratio, scale_ratio);
+            prev_frame_width *= scale_ratio;
+            prev_frame_height *= scale_ratio;
+//            if (scrollevent->delta() > 0){
+//                ui->canvas->scale(scaleFactor, scaleFactor);
+//                prev_frame_width *= scaleFactor;
+//                prev_frame_height *= scaleFactor;
+////                m_dataloader->setPrevWidthHeight(prev_frame_width, prev_frame_height);
+//            }
+//            else{
+//                ui->canvas->scale(1/scaleFactor, 1/scaleFactor);
+//                prev_frame_width *= 1/scaleFactor;
+//                prev_frame_height *= 1/scaleFactor;
+////                m_dataloader->setPrevWidthHeight(prev_frame_width, prev_frame_height);
+//            }
+        }
+
+        event->accept();
+
+        return true;
+    }
+    else{
+        return false;
+    }
 }
 
 void MainWindow::setAddWheelMode(int curr_idx){
@@ -144,6 +183,8 @@ void MainWindow::changeFrame(int frame_no){
     m_dataloader->setFrameNo(std::max(0, std::min(frame_no, num_frames-1)));
     m_dataloader->showFrame();
     ui->video_navigator->setValue(m_dataloader->getFrameNo());
+
+    ui->edit_frame_no->setText(QString::number(std::max(1, std::min(frame_no+1, num_frames))));
 
     selected_checked = false;
 
@@ -237,25 +278,11 @@ void MainWindow::SetNewVideo(int img_width, int img_height)
     ui->radio_rider->setEnabled(true);
     ui->radio_zoom->setEnabled(true);
     ui->btn_zoom_fit->setEnabled(true);
-//    ui->btn_add_rider->setEnabled(true);
-
-//    if(prev_frame_width!=img_width || prev_frame_height!= img_height) {
-//        qreal min_wh = std::min((ui->canvas->width()) / qreal(img_width + 4), (ui->canvas->height()) / qreal(img_height + 4));
-//        ui->canvas->scale(min_wh, min_wh);
-//    }
-
-//    if ((ui->canvas->width()) / qreal(img_width + 4) < (ui->canvas->height()) / qreal(img_height + 4)) {
-//        prev_canvas_width = ui->canvas->width() - 4;
-//        prev_canvas_height = int(img_height * (prev_canvas_width / (float)img_width));
-//    }
-//    else {
-//        prev_canvas_height = ui->canvas->height() - 4;
-//        prev_canvas_width = int(img_width * (prev_canvas_height / (float)img_height));
-//    }
 
     if(is_initialized==false){
         prev_frame_width = (float)img_width;
         prev_frame_height = (float)img_height;
+//        m_dataloader->setPrevWidthHeight(prev_frame_width, prev_frame_height);
 //        curr_scale_ratio = 1.F;
     }
 
@@ -275,28 +302,14 @@ void MainWindow::fit_frame_to_canvas()
     int canvas_w = ui->canvas->width();
     int canvas_h = ui->canvas->height();
 
-//    bool is_canvas_size_changed = false;
-//    if(prev_canvas_width!=canvas_w || prev_canvas_height!=canvas_h){
-//        is_canvas_size_changed = true;
-//    }
+//    m_dataloader->getPrevWidthHeight(prev_frame_width, prev_frame_height);
 
     float min_ratio = std::min(((float)(canvas_w-8)/(prev_frame_width)), ((float)(canvas_h-8)/(prev_frame_height)));
     ui->canvas->scale(min_ratio, min_ratio);
+
     prev_frame_width *= min_ratio;
     prev_frame_height *= min_ratio;
-
-//    if(curr_scale_ratio==1.F){// || is_canvas_size_changed==true){
-//        float min_ratio = std::min(((float)(canvas_w-8)/(prev_frame_width)), ((float)(canvas_h-8)/(prev_frame_height)));
-//        ui->canvas->scale(min_ratio, min_ratio);
-//        prev_frame_width *= min_ratio;
-//        prev_frame_height *= min_ratio;
-////        prev_canvas_width = canvas_w;
-////        prev_canvas_height = canvas_h;
-//    }
-//    else{
-//        ui->canvas->scale(1.F/curr_scale_ratio, 1.F/curr_scale_ratio);
-//        curr_scale_ratio = 1.F+1e-8;
-//    }
+//    m_dataloader->setPrevWidthHeight(prev_frame_width, prev_frame_height);
 }
 
 void MainWindow::on_btn_forward_clicked()
@@ -386,40 +399,27 @@ void MainWindow::on_btn_save_clicked()
 
 void MainWindow::wheelEvent(QWheelEvent* event)
 {
-    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
-        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        float scale_ratio = 1.F;
-        if (event->angleDelta().y() > 0) {
-            scale_ratio = 1.1F;
-        }
-        else {
-            scale_ratio = 1.F/1.1F;
-        }
+//    if (event->modifiers() == Qt::KeyboardModifier::ControlModifier) {
+//        ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
+//        float scale_ratio = 1.F;
+//        if (event->angleDelta().y() > 0) {
+//            scale_ratio = 1.1F;
+//        }
+//        else {
+//            scale_ratio = 1.F/1.1F;
+//        }
 
-        ui->canvas->scale(scale_ratio, scale_ratio);
-        prev_frame_width = prev_frame_width * scale_ratio;
-        prev_frame_height = prev_frame_height * scale_ratio;
+//        ui->canvas->scale(scale_ratio, scale_ratio);
+//        prev_frame_width = prev_frame_width * scale_ratio;
+//        prev_frame_height = prev_frame_height * scale_ratio;
 
-        event->accept();
-    }
+//        event->accept();
+//    }
 }
 
 void MainWindow::on_btn_zoom_fit_clicked()
 {
     fit_frame_to_canvas();
-//    qreal min_wh = std::min((ui->canvas->width()) / qreal(prev_canvas_width + 4), (ui->canvas->height()) / qreal(prev_canvas_height + 4));
-//    ui->canvas->scale(min_wh, min_wh);
-
-//    if ((ui->canvas->width()) / qreal(prev_canvas_width + 4) < (ui->canvas->height()) / qreal(prev_canvas_height + 4)) {
-//        int temp_width = prev_canvas_width;
-//        prev_canvas_width = ui->canvas->width() - 4;
-//        prev_canvas_height = int(prev_canvas_height * (prev_canvas_width / (float)temp_width));
-//    }
-//    else {
-//        int temp_height = prev_canvas_height;
-//        prev_canvas_height = ui->canvas->height() - 4;
-//        prev_canvas_width = int(prev_canvas_width * (prev_canvas_height / (float)temp_height));
-//    }
 }
 
 void MainWindow::on_btn_reverse_angle_clicked()
@@ -524,21 +524,21 @@ void MainWindow::on_radio_normal_clicked()
     ui->lbl_front_txt->setText("");
 }
 
-void MainWindow::on_radio_zoom_clicked()
-{
-    m_dataloader->zoomMode();
-    m_dataloader->editGTs(DataLoader::unchooseAll);
+//void MainWindow::on_radio_zoom_clicked()
+//{
+//    m_dataloader->zoomMode();
+//    m_dataloader->editGTs(DataLoader::unchooseAll);
 
-    ui->btn_add_rider->setEnabled(false);
-    ui->btn_enter_rear->setEnabled(false);
-    ui->btn_enter_front->setEnabled(false);
+//    ui->btn_add_rider->setEnabled(false);
+//    ui->btn_enter_rear->setEnabled(false);
+//    ui->btn_enter_front->setEnabled(false);
 
-    m_dataloader->setRearEnabled(false);
-    m_dataloader->setFrontEnabled(false);
+//    m_dataloader->setRearEnabled(false);
+//    m_dataloader->setFrontEnabled(false);
 
-    ui->lbl_rear_txt->setText("");
-    ui->lbl_front_txt->setText("");
-}
+//    ui->lbl_rear_txt->setText("");
+//    ui->lbl_front_txt->setText("");
+//}
 
 void MainWindow::on_btn_add_rider_clicked()
 {

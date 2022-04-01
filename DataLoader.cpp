@@ -7,6 +7,7 @@ DataLoader::DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *
     curr_frame_no = 0;
     this->viewText = LoadTypeText;
     this->viewWindow = mainWindow;
+//    viewWindow->setEnabled(false);
 
     this->rear_coord_txt = rear_coord_txt;
     this->front_coord_txt = front_coord_txt;
@@ -26,7 +27,7 @@ DataLoader::DataLoader(QGraphicsView* mainWindow, QLabel* LoadTypeText, QLabel *
     rear_enabled = false;
     front_enabled = false;
 
-    zoom_factor = 1.0015F;
+//    zoom_factor = 1.0015F;
 //    this->viewWindow->viewport()->installEventFilter(this);
     this->viewWindow->installEventFilter(this);
 }
@@ -702,6 +703,9 @@ void DataLoader::deleteWheelPoint(){
 }
 
 void DataLoader::setVehicleMode(){
+//    viewWindow->viewport()->removeEventFilter(this);
+//    viewWindow->installEventFilter(this);
+
     this->is_vehicle_mode = true;
     this->is_zoom_mode = false;
 
@@ -727,6 +731,9 @@ void DataLoader::setVehicleMode(){
     emit updateGtInfos(curr_gt_infos, false);
 }
 void DataLoader::setRiderMode(){
+//    viewWindow->viewport()->removeEventFilter(this);
+//    viewWindow->installEventFilter(this);
+
     this->is_vehicle_mode = false;
     this->is_zoom_mode = false;
 
@@ -757,6 +764,9 @@ void DataLoader::setRiderMode(){
 }
 
 void DataLoader::zoomMode(){
+//    viewWindow->removeEventFilter(this);
+//    viewWindow->viewport()->installEventFilter(this);
+
     this->is_vehicle_mode = false;
     this->is_zoom_mode = true;
 
@@ -794,36 +804,13 @@ QString DataLoader::getSelectedRiderWheelPoints(){
 
 bool DataLoader::eventFilter(QObject* obj, QEvent* event)
 {
-////    emit updateLabelInfos(gts_infos[curr_gt_idx]);
-////    if(event->type() == QEvent::KeyPress){
-////        QKeyEvent* keyEvent = static_cast<QKeyEvent*>(event);
-////        if (keyEvent->key() == Qt::Key_N) {
-////            auto pos = this->viewWindow->mapFromGlobal(QCursor::pos());
-////            createNewFrameInfo(viewWindow->mapToScene(pos));
-////        }
-////        else if(keyEvent->key()==Qt::Key_D){
-////            deleteGtInfo();
-////        }
-////        else if(keyEvent->key()==Qt::Key_Escape){
-////            unchooseAll();
-////        }
-
-////        return true;
-////    }
-////    else if(event->type() == QEvent::MouseButtonPress){
     if(event->type() == QEvent::MouseButtonPress){
+//        viewWindow->viewport()->removeEventFilter(this);
+//        viewWindow->installEventFilter(this);
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-//        if(mouseEvent->modifiers()==Qt::Modifier::CTRL){
-//            drag_start_x = mouseEvent->pos().x();
-//            drag_start_y = mouseEvent->pos().y();
-//            viewWindow->grabMouse();
-//        }
-//        else{
         move_start_x = mouseEvent->pos().x();
         move_start_y = mouseEvent->pos().y();
         viewWindow->grabMouse();
-
-//        qDebug() << move_start_x << move_start_y;
 
         if(is_vehicle_mode==true){
             unselect_target = true;
@@ -831,32 +818,21 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
         else{
             add_rider = true;
         }
-//        }
-//        move_start_x = mouseEvent->pos().x();
-//        move_start_y = mouseEvent->pos().y();
-//        viewWindow->grabMouse();
-
-//        if(is_vehicle_mode==true){
-//            unselect_target = true;
-//        }
-//        else{
-//            add_rider = true;
-//        }
+        is_mouse_pressed = true;
 
         return true;
     }
     else if(event->type() == QEvent::MouseMove){
         QMouseEvent* mouseEvent = static_cast<QMouseEvent*>(event);
-        int curr_x = mouseEvent->pos().x();
-        int curr_y = mouseEvent->pos().y();
-//        if(mouseEvent->modifiers()==Qt::Modifier::CTRL){
-//            is_drag_mode = true;
-//        }
-//        else{
-        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
-        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
-        move_start_x = curr_x;
-        move_start_y = curr_y;
+        if(is_mouse_pressed==true){
+            int curr_x = mouseEvent->pos().x();
+            int curr_y = mouseEvent->pos().y();
+            viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
+            viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
+            move_start_x = curr_x;
+            move_start_y = curr_y;
+            is_mouse_moving = true;
+        }
 
         if(is_vehicle_mode==true){
             unselect_target = false;
@@ -865,42 +841,92 @@ bool DataLoader::eventFilter(QObject* obj, QEvent* event)
             add_rider = false;
         }
 
-//        qDebug() << mouseEvent->pos().x() << mouseEvent->pos().y();
-//        }
-//        viewWindow->horizontalScrollBar()->setValue(viewWindow->horizontalScrollBar()->value() - (curr_x - move_start_x));
-//        viewWindow->verticalScrollBar()->setValue(viewWindow->verticalScrollBar()->value() - (curr_y - move_start_y));
-//        move_start_x = curr_x;
-//        move_start_y = curr_y;
-
-//        if(is_vehicle_mode==true){
-//            unselect_target = false;
-//        }
-//        else{
-//            add_rider = false;
+//        QPointF delta = target_viewport_pos - mouseEvent->pos();
+//        if(qAbs(delta.x()) > 5 || qAbs(delta.y()) > 5){
+//            target_viewport_pos = mouseEvent->pos();
+//            target_scene_pos = viewWindow->mapToScene(mouseEvent->pos());
 //        }
 
         return true;
     }
     else if(event->type() == QEvent::MouseButtonRelease){
+//        viewWindow->removeEventFilter(this);
+//        viewWindow->viewport()->installEventFilter(this);
+        if(is_mouse_moving==true){
+            GtInfo background;
+            background.is_background = true;
+            background.bbox.x1 = 0.F;
+            background.bbox.y1 = 0.F;
+            background.bbox.x2 = frame_width;
+            background.bbox.y2 = frame_height;
+            curr_gt_infos.push_back(background);
+
+            is_mouse_moving = false;
+            emit updateGtInfos(curr_gt_infos, false);
+        }
+
+        is_mouse_pressed = false;
         viewWindow->releaseMouse();
 
         return true;
     }
+//    else if(event->type()==QEvent::Wheel){
+//        QWheelEvent* wheel_event = static_cast<QWheelEvent*>(event);
+//        if(wheel_event->modifiers() == Qt::KeyboardModifier::ControlModifier && is_zoom_mode==true && wheel_event->orientation() == Qt::Vertical){
+//            if(wheel_event->angleDelta().y()>0){
+//                Zoom(1.1F);
+//            }
+//            else{
+//                Zoom(1.F/1.1F);
+//            }
+//        }
+
+//        return true;
+//    }
     else{
         return false;
     }
 }
 
-void DataLoader::Zoom(float factor){
-    viewWindow->scale(factor, factor);
-    viewWindow->centerOn(target_scene_pos);
-    QPointF delta_viewport_pos = target_viewport_pos - QPointF(viewWindow->viewport()->width() / 2.0,
-                                                               viewWindow->viewport()->height() / 2.0);
-    QPointF viewport_center = viewWindow->mapFromScene(target_scene_pos) - delta_viewport_pos;
-    viewWindow->centerOn(viewWindow->mapToScene(viewport_center.toPoint()));
+void DataLoader::removeBackground()
+{
+    int obj_size = curr_gt_infos.size();
+    for(int i=obj_size-1; i>-1; i--){
+        if(curr_gt_infos[i].is_background==true){
+            curr_gt_infos.removeAt(i);
+            break;
+        }
+    }
 
-    emit zoomed();
+    emit updateGtInfos(curr_gt_infos, false);
 }
+
+//void DataLoader::addBackground()
+//{
+//    GtInfo background;
+//    background.is_background = true;
+//    background.bbox.x1 = 0.F;
+//    background.bbox.y1 = 0.F;
+//    background.bbox.x2 = frame_width;
+//    background.bbox.y2 = frame_height;
+//    curr_gt_infos.push_back(background);
+
+//    emit updateGtInfos(curr_gt_infos, false);
+//}
+
+//void DataLoader::Zoom(float factor){
+//    viewWindow->scale(factor, factor);
+//    prev_frame_width *= factor;
+//    prev_frame_height *= factor;
+
+//    viewWindow->centerOn(target_scene_pos);
+//    QPointF delta_viewport_pos = target_viewport_pos - QPointF(viewWindow->viewport()->width() / 2.0,
+//                                                               viewWindow->viewport()->height() / 2.0);
+//    QPointF viewport_center = viewWindow->mapFromScene(target_scene_pos) - delta_viewport_pos;
+//    viewWindow->centerOn(viewWindow->mapToScene(viewport_center.toPoint()));
+
+//    emit zoomed();
+//}
 
 
 
