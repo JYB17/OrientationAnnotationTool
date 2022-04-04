@@ -86,32 +86,6 @@ void OrientationGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphic
         painter->drawLine(x_end, y_end, x_center+45.F*cos(calculateAngleInImage(m_gtInfo.dir_angle-10.F)), y_center+45.F*sin(calculateAngleInImage(m_gtInfo.dir_angle-10.F)));
         painter->drawLine(x_end, y_end, x_center+45.F*cos(calculateAngleInImage(m_gtInfo.dir_angle+10.F)), y_center+45.F*sin(calculateAngleInImage(m_gtInfo.dir_angle+10.F)));
 
-//        painter->drawRect(m_rect);
-////        updateGtInfo();
-
-//        if(m_gtInfo.show_cls==true && m_gtInfo.move_resize==false && m_gtInfo.is_chosen==true){
-//            pen.setColor(Qt::black);
-//            pen.setWidth(5);
-//            painter->setPen(pen);
-//            painter->drawText(m_rect.x()-4, m_rect.y()-8, m_gtInfo.obj_cls);
-//            pen.setColor(box_color);
-//            pen.setWidth(3);
-//            painter->setPen(pen);
-//            painter->drawText(m_rect.x()-4, m_rect.y()-8, m_gtInfo.obj_cls);
-//        }
-
-//        if (m_gtInfo.is_chosen == true && m_gtInfo.move_resize == false) {
-//            QBrush brush(Qt::white);
-//            painter->setBrush(brush);
-//            pen.setColor(Qt::white);
-//            painter->setPen(pen);
-//            painter->drawRect(m_rect.x() - 6, m_rect.y() - 6, 12, 12);
-//            painter->drawRect(m_rect.x() + m_rect.width() - 6, m_rect.y() - 6, 12, 12);
-//            painter->drawRect(m_rect.x() - 6, m_rect.y() + m_rect.height() - 6, 12, 12);
-//            painter->drawRect(m_rect.x() + m_rect.width() - 6, m_rect.y() + m_rect.height() - 6, 12, 12);
-////            m_LabelManager->setTopLayer(this);
-//        }
-
         widget->update();
     }
 }
@@ -242,17 +216,8 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
         }
         else if(event->button() == Qt::LeftButton){
             m_gtInfo.is_not_dragging = true;
-
-//            float move_start_x = event->pos().x();
-//            float move_start_y = event->pos().y();
-
-//            emit m_labelmanager->setStartXY(move_start_x, move_start_y);
-
-////            m_gtInfo.drag_chosen_area.x1 = event->pos().x();
-////            m_gtInfo.drag_chosen_area.y1 = event->pos().y();
         }
     }
-//    if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
     else if (event->modifiers() == Qt::Modifier::CTRL && event->button() == Qt::LeftButton){// && m_gtInfo.mode_edit == true) {
         if (m_gtInfo.is_chosen == false && m_gtInfo.draw_enabled==true && m_gtInfo.vehicle_mode==true){
             m_gtInfo.is_chosen = true;
@@ -305,12 +270,6 @@ void OrientationGraphicsItem::mousePressEvent(QGraphicsSceneMouseEvent* event)
             else if (selectedAction->text() == "Set Bottom Layer") {
                 m_labelmanager->setBottomLayer(this);
             }
-//            else if (selectedAction->text() == "Set object class") {
-//                emit m_labelmanager->changeObjCls(m_gtInfo);
-//                m_gtInfo.is_chosen = true;
-//                m_labelmanager->setTopLayer(this);
-////                m_labelmanager->setBottomLayer(this);
-//            }
         }
     }
 }
