@@ -811,7 +811,7 @@
            <string>G</string>
           </property>
           <property name="checked">
-           <bool>true</bool>
+           <bool>false</bool>
           </property>
          </widget>
         </item>
@@ -971,7 +971,7 @@
           <item>
            <widget class="QLabel" name="lbl_rear">
             <property name="text">
-             <string>REAR</string>
+             <string>REAR (cyan)</string>
             </property>
            </widget>
           </item>
@@ -1002,7 +1002,7 @@
           <item>
            <widget class="QLabel" name="lbl_front">
             <property name="text">
-             <string>FRONT</string>
+             <string>FRONT (blue)</string>
             </property>
            </widget>
           </item>
@@ -1096,7 +1096,7 @@
      <x>0</x>
      <y>0</y>
      <width>1739</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFiles">

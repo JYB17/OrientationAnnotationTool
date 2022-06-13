@@ -616,7 +616,8 @@ void DataLoader::editGTs(editMode mode){
 
     int obj_size = curr_gt_infos.size();
     for(int i=0; i<obj_size; i++){
-        if(mode==chooseAll){
+//        if(mode==chooseAll){
+        if(mode==chooseAll && is_vehicle_mode!=curr_gt_infos[i].is_2_wheeler){
             curr_gt_infos[i].is_chosen = true;
             curr_gt_infos[i].is_first = false;
             curr_gt_infos[i].multi_chosen = true;

@@ -95,22 +95,47 @@ void TwoWheelerGraphicsItem::paint(QPainter* painter, const QStyleOptionGraphics
         if(m_gtInfo.is_svnet_rider==true){
             painter->drawRect(m_gtInfo.bbox.x1, m_gtInfo.bbox.y1, m_gtInfo.bbox.x2-m_gtInfo.bbox.x1, m_gtInfo.bbox.y2-m_gtInfo.bbox.y1);
 
-            QBrush brush(Qt::magenta);
-            pen.setColor(Qt::magenta);
-            painter->setBrush(brush);
-            painter->setPen(pen);
+//            QBrush brush(Qt::magenta);
+//            pen.setColor(Qt::magenta);
+//            painter->setBrush(brush);
+//            painter->setPen(pen);
+
+            if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F) && !(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
+                QBrush brush(Qt::magenta);
+                pen.setColor(Qt::magenta);
+                painter->setBrush(brush);
+                painter->setPen(pen);
+
+//                painter->setPen(pen);
+                painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
+            }
 
             if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F)){
+                QBrush brush(Qt::blue);
+                pen.setColor(Qt::blue);
+                painter->setBrush(brush);
+                painter->setPen(pen);
+
                 painter->drawRect(m_gtInfo.front_x-2.F, m_gtInfo.front_y-2.F, 4, 4);
             }
             if(!(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
+                QBrush brush(Qt::cyan);
+                pen.setColor(Qt::cyan);
+                painter->setBrush(brush);
+                painter->setPen(pen);
+
                 painter->drawRect(m_gtInfo.rear_x-2.F, m_gtInfo.rear_y-2.F, 4, 4);
             }
 
-            if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F) && !(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
-                painter->setPen(pen);
-                painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
-            }
+//            if(!(m_gtInfo.front_x==-1.F && m_gtInfo.front_y==-1.F) && !(m_gtInfo.rear_x==-1.F && m_gtInfo.rear_y==-1.F)){
+//                QBrush brush(Qt::yellow);
+//                pen.setColor(Qt::yellow);
+//                painter->setBrush(brush);
+//                painter->setPen(pen);
+
+////                painter->setPen(pen);
+//                painter->drawLine(m_gtInfo.front_x, m_gtInfo.front_y, m_gtInfo.rear_x, m_gtInfo.rear_y);
+//            }
         }
         else{
             painter->drawLine(m_gtInfo.x[0], m_gtInfo.y[0], m_gtInfo.x[1], m_gtInfo.y[1]);

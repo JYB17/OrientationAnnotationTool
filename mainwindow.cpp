@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_timer = new QTimer(this);
     m_labelmanager = new LabelManager(m_scene);
     m_timer->setInterval(20);
-//    m_timer->setInterval(30);
+//    m_timer->setInterval(60);
 
 //    m_dataloader->SetDrawInfo(&draw_info);
 
@@ -111,7 +111,8 @@ bool MainWindow::eventFilter(QObject* obj, QEvent* event)
 {
     if (event->type() == QEvent::GraphicsSceneWheel){
         ui->canvas->setTransformationAnchor(QGraphicsView::AnchorUnderMouse);
-        bool ok = QApplication::keyboardModifiers() & Qt::ControlModifier;
+//        bool ok = QApplication::keyboardModifiers() & Qt::ControlModifier;
+        bool ok = true;
         if (ok){
             QGraphicsSceneWheelEvent *scrollevent = static_cast<QGraphicsSceneWheelEvent *>(event);
             float scale_ratio = scrollevent->delta() > 0 ? scaleFactor : 1.F/scaleFactor;
@@ -245,6 +246,7 @@ void MainWindow::on_actionLoad_Frame_Images_triggered()
 void MainWindow::on_btn_load_gts_imgs_clicked()
 {
     if(ui->edit_gt_path->text()!="" && ui->edit_img_path->text()!="" && ui->edit_save_path->text()!=""){
+        m_dataloader->setNewGtMode(!(ui->check_show_orig->isChecked()));
         m_dataloader->setGTPath(ui->edit_gt_path->text());
         m_dataloader->setSavePath(ui->edit_save_path->text());
         m_dataloader->setImgPath(ui->edit_img_path->text());
