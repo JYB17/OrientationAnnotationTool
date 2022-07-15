@@ -597,13 +597,16 @@ void DataLoader::setRiderPoint(float x, float y){
 void DataLoader::deleteGTs(){
     savePrevInfos();
 
+    int num_removed = 0;
     int obj_size = curr_gt_infos.size();
     for(int i=obj_size-1; i>-1; i--){
         if(curr_gt_infos[i].is_chosen==true){
             curr_gt_infos.removeAt(i);
+            num_removed++;
         }
 //        curr_gt_infos[i].multi_chosen = false;
     }
+    this->action_message = QString::number(num_removed) + " objects delted!";
 
     emit updateGtInfos(curr_gt_infos, true);
 }
@@ -614,13 +617,19 @@ void DataLoader::editGTs(editMode mode){
     }
     bool change_gt_mode = false;
 
-    int obj_size = curr_gt_infos.size();
+    if(mode==changeAngle){
+        this->action_message = "Reversed angle: \n";
+    }
+    int num_chosen = 0;
+
+    int obj_size = curr_gt_infos.size();    
     for(int i=0; i<obj_size; i++){
 //        if(mode==chooseAll){
         if(mode==chooseAll && is_vehicle_mode!=curr_gt_infos[i].is_2_wheeler){
             curr_gt_infos[i].is_chosen = true;
             curr_gt_infos[i].is_first = false;
             curr_gt_infos[i].multi_chosen = true;
+            num_chosen++;
         }
         else if(mode==unchooseAll && curr_gt_infos[i].is_adding_wheel==false){
             curr_gt_infos[i].is_chosen = false;
@@ -640,9 +649,11 @@ void DataLoader::editGTs(editMode mode){
             curr_gt_infos[i].draw_enabled = !(curr_gt_infos[i].draw_enabled);
         }
         else if(mode==changeAngle && curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].dir_angle>-0.1F){
+            float prev_angle = curr_gt_infos[i].dir_angle;
             float rotated_angle = curr_gt_infos[i].dir_angle + 90.F;
             curr_gt_infos[i].dir_angle = rotated_angle<360.F ? rotated_angle : (rotated_angle-360.F);
             change_gt_mode = true;
+            this->action_message += " * " + QString::number(prev_angle) + " -> " + QString::number(curr_gt_infos[i].dir_angle) + "\n";
         }
         else if(mode==enableDraw){
             curr_gt_infos[i].draw_enabled = true;
@@ -651,6 +662,10 @@ void DataLoader::editGTs(editMode mode){
             curr_gt_infos[i].is_adding_wheel = true;
         }
     }
+
+//    if(mode==chooseAll){
+//        this->action_message = QString::number(num_chosen) + "/" + QString::number(obj_size) + " selected!";
+//    }
 
     emit updateGtInfos(curr_gt_infos, change_gt_mode);
 }
@@ -661,8 +676,13 @@ void DataLoader::setRearWheelPoint(float x, float y){
     int obj_size = curr_gt_infos.size();
     for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_adding_wheel==true){
+            float prev_rear_x = curr_gt_infos[i].rear_x;
+            float prev_rear_y = curr_gt_infos[i].rear_y;
+
             curr_gt_infos[i].rear_x = x;
             curr_gt_infos[i].rear_y = y;
+
+            this->action_message = "Rear point changed: (" + (prev_rear_x==-1.F ? "N/A" : QString::number(prev_rear_x)) + ", " + (prev_rear_y==-1.F ? "N/A" : QString::number(prev_rear_y)) + ") -> (" + QString::number(curr_gt_infos[i].rear_x) + ", " + QString::number(curr_gt_infos[i].rear_y) + ")";
             break;
         }
     }
@@ -676,9 +696,14 @@ void DataLoader::setFrontWheelPoint(float x, float y){
     int obj_size = curr_gt_infos.size();
     for(int i=0; i<obj_size; i++){
         if(curr_gt_infos[i].is_chosen==true && curr_gt_infos[i].is_2_wheeler==true && curr_gt_infos[i].is_adding_wheel==true){
+            float prev_front_x = curr_gt_infos[i].front_x;
+            float prev_front_y = curr_gt_infos[i].front_y;
+
             curr_gt_infos[i].front_x = x;
             curr_gt_infos[i].front_y = y;
             curr_gt_infos[i].is_adding_wheel = false;
+
+            this->action_message = "Rear point changed: (" + (prev_front_x==-1.F ? "N/A" : QString::number(prev_front_x)) + ", " + (prev_front_y==-1.F ? "N/A" : QString::number(prev_front_y)) + ") -> (" + QString::number(curr_gt_infos[i].front_x) + ", " + QString::number(curr_gt_infos[i].front_y) + ")";
             break;
         }
     }

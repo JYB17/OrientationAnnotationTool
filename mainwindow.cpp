@@ -14,7 +14,7 @@ MainWindow::MainWindow(QWidget *parent)
     m_timer = new QTimer(this);
     m_labelmanager = new LabelManager(m_scene);
     m_timer->setInterval(20);
-//    m_timer->setInterval(60);
+//    m_timer->setInterval(100);
 
 //    m_dataloader->SetDrawInfo(&draw_info);
 
@@ -204,6 +204,7 @@ void MainWindow::changeFrame(int frame_no){
 }
 
 void MainWindow::timeout(){
+//    this->time
     changeFrame(m_dataloader->getFrameNo()+1);
     if(m_dataloader->getFrameNo()==(num_frames-1)){
         pause_video();
@@ -252,6 +253,7 @@ void MainWindow::on_btn_load_gts_imgs_clicked()
         m_dataloader->setImgPath(ui->edit_img_path->text());
         is_initialized = true;
     }
+    ui->label_action_info->setText("Loaded GT path: " + m_dataloader->getGTPath() + "\nLoaded Image path: " + m_dataloader->getImgPath() + "\nSaved path: " + m_dataloader->getSavePath());
 }
 
 void MainWindow::SetNewVideo(int img_width, int img_height)
@@ -341,6 +343,7 @@ void MainWindow::on_video_navigator_valueChanged(int value)
 
 void MainWindow::play_video(){
     m_timer->start();
+//    m_timer->setInterval(100);
     ui->btn_backward->setEnabled(false);
     ui->btn_forward->setEnabled(false);
     ui->btn_forward_30->setEnabled(false);
@@ -427,16 +430,22 @@ void MainWindow::on_btn_zoom_fit_clicked()
 void MainWindow::on_btn_reverse_angle_clicked()
 {
     m_dataloader->editGTs(DataLoader::changeAngle);
+
+    ui->label_action_info->setText(m_dataloader->getActionInfos());
 }
 
 void MainWindow::on_btn_delete_clicked()
 {
     m_dataloader->deleteGTs();
+
+    ui->label_action_info->setText(m_dataloader->getActionInfos());
 }
 
 void MainWindow::on_btn_choose_all_clicked()
 {
     m_dataloader->editGTs(DataLoader::chooseAll);
+
+    ui->label_action_info->setText(m_dataloader->getActionInfos());
 }
 
 void MainWindow::on_btn_unchoose_all_clicked()
@@ -576,6 +585,8 @@ void MainWindow::on_btn_enter_rear_clicked()
 //        new_rider.rear_x = -1.F;
 //        new_rider.rear_y = -1.F;
     }
+
+    ui->label_action_info->setText(m_dataloader->getActionInfos());
 }
 
 void MainWindow::on_btn_enter_front_clicked()
@@ -602,6 +613,8 @@ void MainWindow::on_btn_enter_front_clicked()
 
     ui->lbl_rear_txt->setText("");
     ui->lbl_front_txt->setText("");
+
+    ui->label_action_info->setText(m_dataloader->getActionInfos());
 
 //    m_dataloader->showCurrRiderGTs();
 }

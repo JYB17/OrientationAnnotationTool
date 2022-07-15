@@ -793,6 +793,20 @@
          </widget>
         </item>
         <item>
+         <widget class="QLabel" name="label_action_info">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QLabel" name="label_empty_top_2">
+          <property name="text">
+           <string/>
+          </property>
+         </widget>
+        </item>
+        <item>
          <widget class="QCheckBox" name="check_show_orig">
           <property name="enabled">
            <bool>true</bool>

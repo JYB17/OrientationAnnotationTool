@@ -55,6 +55,20 @@ public:
     void setImgPath(QString const img_path);
     void setSavePath(QString const save_path);
 
+    QString getGTPath(){
+        return this->gt_path;
+    }
+    QString getImgPath(){
+        return this->img_path;
+    }
+    QString getSavePath(){
+        return this->save_path;
+    }
+
+    QString getActionInfos(){
+        return this->action_message;
+    }
+
     void setRearWheelPoint(float x, float y);
     void setFrontWheelPoint(float x, float y);
     void deleteWheelPoint();
@@ -127,6 +141,8 @@ private:
     QString gt_path;
     QString img_path;
     QString save_path;
+
+    QString action_message;
 
     int frame_width;
     int frame_height;
